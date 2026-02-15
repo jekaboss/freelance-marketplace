@@ -513,6 +513,7 @@ export default function AdminContentControlPage() {
                             <option value="archived">Archived</option>
                           </select>
                         </div>
+                      </div>
                       
                       <div className="space-y-4">
                         <div>
