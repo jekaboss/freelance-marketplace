@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: freelance_marketplace_postgres
+    environment:
+      POSTGRES_DB: freelancemarketplacedb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend-fastapi:
+    build:
+      context: ./backend-fastapi
+      dockerfile: Dockerfile
+    container_name: freelance_marketplace_fastapi
+    ports:
+      - "4002:4002"
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/freelancemarketplacedb
+      - JWT_SECRET=change_me
+      - JWT_EXPIRES_MINUTES=10080
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: freelance_marketplace_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_NEST_BASE=http://localhost:4001/api
+      - NEXT_PUBLIC_API_FASTAPI_BASE=http://localhost:4002/api
+    depends_on:
+      - backend-fastapi
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

@@ -1,0 +1,19 @@
+﻿import "reflect-metadata";
+import { DataSource } from "typeorm";
+import { User } from "./users/user.entity";
+import { Freelancer } from "./freelancers/freelancer.entity";
+import { Project } from "./projects/project.entity";
+import { config } from "dotenv";
+
+config();
+
+export default new DataSource({
+  type: "postgres",
+  host: process.env.DATABASE_HOST,
+  port: Number(process.env.DATABASE_PORT || 5432),
+  username: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME,
+  entities: [User, Freelancer, Project],
+  migrations: ["dist/migrations/*.js"],
+});
