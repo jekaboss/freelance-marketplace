@@ -670,6 +670,7 @@ export default function AdminNotificationManagementPage() {
             )}
           </div>
         </div>
+      </div>
       
       <Footer />
     </div>
