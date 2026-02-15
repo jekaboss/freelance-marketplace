@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
-import { MoonIcon, SunIcon, GlobeIcon, ServerIcon, UserIcon, LogOutIcon } from "lucide-react";
+import { MoonIcon, SunIcon, ServerIcon, UserIcon, LogOutIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Logo } from "@/components/logo";
 import Link from "next/link";
@@ -37,15 +36,9 @@ function AdminLink({ isAdmin }: { isAdmin: boolean }) {
 
 export function Header() {
   const { theme, setTheme } = useTheme();
-  const { language, changeLanguage } = useLanguage();
   const { t } = useTranslation();
   const { isAdmin } = useAdmin();
   const { apiMode, setApiMode, user, isAuthenticated, logout, isHydrated } = useAuth();
-
-  const languages = [
-    { code: "en", label: "English" },
-    { code: "uk", label: "Українська" },
-  ];
 
   const apiModes = [
     { value: "auto", label: "Auto" },
@@ -107,25 +100,6 @@ export function Header() {
               <DropdownMenuItem onClick={() => setTheme("light")}>{t('lightMode')}</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme("dark")}>{t('darkMode')}</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme("system")}>{t('systemMode')}</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Change language">
-                <GlobeIcon className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {languages.map((lang) => (
-                <DropdownMenuItem
-                  key={lang.code}
-                  onClick={() => changeLanguage(lang.code)}
-                  className={language === lang.code ? "bg-accent" : ""}
-                >
-                  {lang.label}
-                </DropdownMenuItem>
-              ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
