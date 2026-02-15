@@ -501,6 +501,7 @@ export default function AdminNotificationManagementPage() {
                             <option value="sent">Sent</option>
                           </select>
                         </div>
+                      </div>
                       
                       <div className="space-y-4">
                         <div>
