@@ -606,6 +606,7 @@ export default function AdminNotificationManagementPage() {
                             />
                           </div>
                         </div>
+                      </div>
                       
                       <div>
                         <h3 className="text-xl font-semibold text-stalker-green mb-4">Template Management</h3>
