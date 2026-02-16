@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { SearchIcon, MapPinIcon, StarIcon, AwardIcon, MessageCircleIcon } from "lucide-react";
 import { useTranslation } from 'react-i18next';
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useAuth } from "@/components/auth-provider";
 
@@ -128,22 +128,25 @@ export default function FreelancersPage() {
     setPage(1);
   };
 
+  const [showFilters, setShowFilters] = useState(false);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      <div className="container py-8 px-4 flex-grow">
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold mb-2">{t('freelancers')}</h1>
-          <p className="text-muted-foreground">Discover talented professionals for your project</p>
+      <div className="container py-6 md:py-8 px-4 flex-grow">
+        <div className="mb-6 md:mb-10">
+          <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">{t('freelancers')}</h1>
+          <p className="text-muted-foreground text-sm md:text-base">Discover talented professionals for your project</p>
         </div>
 
         <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="w-full md:w-64 flex-shrink-0">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+            {/* Filters Sidebar */}
+            <div className={`${showFilters ? 'block' : 'hidden'} md:block w-full md:w-64 flex-shrink-0`}>
               <Card>
-                <CardHeader>
-                  <CardTitle>Filters</CardTitle>
+                <CardHeader className="pb-3 md:pb-4">
+                  <CardTitle className="text-lg">Filters</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -161,7 +164,7 @@ export default function FreelancersPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Location</label>
-                    <select className="w-full p-2 border rounded-md">
+                    <select className="w-full p-2 border rounded-md text-sm">
                       <option>All Locations</option>
                       <option>North America</option>
                       <option>Europe</option>
@@ -172,7 +175,7 @@ export default function FreelancersPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Hourly Rate</label>
-                    <select className="w-full p-2 border rounded-md">
+                    <select className="w-full p-2 border rounded-md text-sm">
                       <option>All Rates</option>
                       <option>$10 - $25/hr</option>
                       <option>$25 - $50/hr</option>
@@ -183,7 +186,7 @@ export default function FreelancersPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Experience Level</label>
-                    <select className="w-full p-2 border rounded-md">
+                    <select className="w-full p-2 border rounded-md text-sm">
                       <option>All Levels</option>
                       <option>Entry Level</option>
                       <option>Intermediate</option>
@@ -194,57 +197,69 @@ export default function FreelancersPage() {
               </Card>
             </div>
 
+            {/* Freelancers List */}
             <div className="flex-1">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold">Available Freelancers</h2>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg md:text-xl font-semibold">Available Freelancers</h2>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="md:hidden"
+                    onClick={() => setShowFilters(!showFilters)}
+                  >
+                    <SearchIcon className="h-4 w-4 mr-2" />
+                    Filters
+                  </Button>
+                </div>
                 <p className="text-sm text-muted-foreground">{filteredFreelancers.length} freelancers found</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {filteredFreelancers.map((freelancer) => (
                   <Card key={freelancer.id} className="hover:shadow-md transition-shadow">
                     <CardHeader className="pb-3">
-                      <div className="flex items-center gap-4">
-                        <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
-                        <div>
-                          <CardTitle>{freelancer.name}</CardTitle>
-                          <p className="text-sm text-muted-foreground">{freelancer.title}</p>
+                      <div className="flex items-start gap-3 md:gap-4">
+                        <div className="bg-gray-200 border-2 border-dashed rounded-xl w-12 h-12 md:w-16 md:h-16 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-base md:text-lg truncate">{freelancer.name}</CardTitle>
+                          <p className="text-sm text-muted-foreground truncate">{freelancer.title}</p>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-muted-foreground mb-4">{freelancer.description}</p>
+                      <p className="text-muted-foreground mb-3 md:mb-4 text-sm line-clamp-2">{freelancer.description}</p>
 
-                      <div className="flex flex-wrap gap-2 mb-4">
+                      <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4">
                         {freelancer.skills.slice(0, 3).map((skill, idx) => (
-                          <Badge key={idx} variant="outline">{skill}</Badge>
+                          <Badge key={idx} variant="outline" className="text-xs">{skill}</Badge>
                         ))}
                         {freelancer.skills.length > 3 && (
-                          <Badge variant="outline">+{freelancer.skills.length - 3} more</Badge>
+                          <Badge variant="outline" className="text-xs">+{freelancer.skills.length - 3} more</Badge>
                         )}
                       </div>
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <StarIcon className="fill-yellow-400 text-yellow-400 mr-1 h-4 w-4" />
+                          <StarIcon className="fill-yellow-400 text-yellow-400 mr-1 h-3.5 w-3.5 md:h-4 md:w-4" />
                           <span className="text-sm font-medium">{freelancer.rating}</span>
-                          <span className="text-xs text-muted-foreground ml-1">({freelancer.reviews} reviews)</span>
+                          <span className="text-xs text-muted-foreground ml-1">({freelancer.reviews})</span>
                         </div>
                         <span className="text-sm font-semibold">{freelancer.hourlyRate}</span>
                       </div>
 
                       <div className="flex items-center mt-2 text-sm text-muted-foreground">
-                        <MapPinIcon className="mr-1 h-4 w-4" />
+                        <MapPinIcon className="mr-1 h-3.5 w-3.5" />
                         {freelancer.location}
                       </div>
                     </CardContent>
                     <CardFooter className="flex gap-2">
-                      <Button variant="outline" className="flex-1">
-                        <MessageCircleIcon className="mr-2 h-4 w-4" />
+                      <Button variant="outline" className="flex-1 text-sm">
+                        <MessageCircleIcon className="mr-1.5 h-3.5 w-3.5 md:h-4 md:w-4" />
                         Contact
                       </Button>
-                      <Button className="flex-1">
-                        <AwardIcon className="mr-2 h-4 w-4" />
+                      <Button className="flex-1 text-sm">
+                        <AwardIcon className="mr-1.5 h-3.5 w-3.5 md:h-4 md:w-4" />
                         Hire
                       </Button>
                     </CardFooter>
@@ -252,7 +267,7 @@ export default function FreelancersPage() {
                 ))}
               </div>
 
-              <div className="flex justify-center mt-8">
+              <div className="flex justify-center mt-6 md:mt-8">
                 <nav className="flex items-center space-x-2">
                   <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
                     Previous

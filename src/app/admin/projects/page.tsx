@@ -213,37 +213,41 @@ export default function AdminProjectsPage() {
         <div className="hidden lg:block w-64 flex-shrink-0">
           <StalkerSidebar />
         </div>
+        {/* Mobile sidebar toggle */}
+        <div className="lg:hidden fixed bottom-4 right-4 z-50">
+          <StalkerSidebar />
+        </div>
 
-        <div className="flex-1 container py-12 px-4 relative z-10">
-          <div className="mb-10">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="flex-1 container py-6 md:py-8 lg:py-12 px-3 md:px-4 relative z-10">
+          <div className="mb-6 md:mb-8 lg:mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4 mb-6 md:mb-8">
               <div>
-                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow">
                   PROJECT CONTROL
                 </h1>
-                <p className="text-stalker-muted mt-2 flex items-center gap-2">
-                  <RadiationIcon className="h-4 w-4 text-stalker-yellow" />
-                  Monitor and manage zone projects
+                <p className="text-stalker-muted mt-1 md:mt-2 flex items-center gap-2 text-sm">
+                  <RadiationIcon className="h-3 w-3 md:h-4 md:w-4 text-stalker-yellow" />
+                  <span className="hidden sm:inline">Monitor and manage zone projects</span>
                 </p>
               </div>
               <Button
                 onClick={logoutAdmin}
                 variant="outline"
-                className="flex items-center gap-2 bg-stalker-dark border-stalker-border hover:bg-stalker-darker text-stalker-text"
+                className="flex items-center gap-2 bg-stalker-dark border-stalker-border hover:bg-stalker-darker text-stalker-text text-sm"
               >
-                <LogOutIcon className="h-4 w-4" />
-                Exit Zone
+                <LogOutIcon className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Exit Zone</span>
               </Button>
             </div>
           </div>
 
           <Card className="bg-stalker-card border-stalker-border shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-stalker-red to-stalker-orange p-4">
-              <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-stalker-dark">
-                <span className="text-xl">Projects List</span>
+            <div className="bg-gradient-to-r from-stalker-red to-stalker-orange p-3 md:p-4">
+              <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4 text-stalker-dark">
+                <span className="text-lg md:text-xl">Projects List</span>
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <select
-                    className="w-full sm:w-44 p-2 border rounded-md bg-stalker-dark text-stalker-text border-stalker-border"
+                    className="w-full sm:w-36 lg:w-44 p-2 border rounded-md bg-stalker-dark text-stalker-text border-stalker-border text-sm"
                     value={`${sortField}:${sortDir}`}
                     onChange={(e) => {
                       const [field, dir] = e.target.value.split(":") as ["title" | "client" | "status", "asc" | "desc"];
@@ -259,10 +263,10 @@ export default function AdminProjectsPage() {
                     <option value="status:asc">Status A-Z</option>
                     <option value="status:desc">Status Z-A</option>
                   </select>
-                  <div className="relative w-full sm:w-64">
+                  <div className="relative w-full sm:w-40 lg:w-64">
                     <Input
-                      placeholder="Search projects..."
-                      className="pl-10 w-full py-2 bg-stalker-dark text-stalker-text border-stalker-border"
+                      placeholder="Search..."
+                      className="pl-10 w-full py-1.5 md:py-2 bg-stalker-dark text-stalker-text border-stalker-border h-9"
                       value={searchQuery}
                       onChange={(e) => {
                         setSearchQuery(e.target.value);
@@ -274,104 +278,104 @@ export default function AdminProjectsPage() {
                 </div>
               </CardTitle>
             </div>
-            <CardContent className="pt-6">
+            <CardContent className="pt-4 md:pt-6">
               {loading && <p className="text-stalker-muted">Loading...</p>}
               {error && <p className="text-stalker-red">{error}</p>}
-              <div className="overflow-x-auto rounded-lg border border-stalker-border">
-                <table className="w-full">
+              <div className="overflow-x-auto rounded-lg border border-stalker-border -mx-4 px-4 md:mx-0 md:px-0">
+                <table className="w-full min-w-[550px] md:min-w-0">
                   <thead className="bg-stalker-border">
                     <tr>
-                      <th className="text-left py-3 px-4 rounded-tl-lg text-stalker-green">ID</th>
-                      <th className="text-left py-3 px-4 text-stalker-green">Title</th>
-                      <th className="text-left py-3 px-4 text-stalker-green">Client</th>
-                      <th className="text-left py-3 px-4 text-stalker-green">Status</th>
-                      <th className="text-left py-3 px-4 text-stalker-green">Budget</th>
-                      <th className="text-left py-3 px-4 text-stalker-green">Bids</th>
-                      <th className="text-left py-3 px-4 rounded-tr-lg text-stalker-green">Actions</th>
+                      <th className="text-left py-2 md:py-3 px-2 md:px-4 rounded-tl-lg text-stalker-green text-sm">ID</th>
+                      <th className="text-left py-2 md:py-3 px-2 md:px-4 text-stalker-green text-sm">Title</th>
+                      <th className="text-left py-2 md:py-3 px-2 md:px-4 text-stalker-green text-sm hidden sm:table-cell">Client</th>
+                      <th className="text-left py-2 md:py-3 px-2 md:px-4 text-stalker-green text-sm">Status</th>
+                      <th className="text-left py-2 md:py-3 px-2 md:px-4 text-stalker-green text-sm hidden md:table-cell">Budget</th>
+                      <th className="text-left py-2 md:py-3 px-2 md:px-4 text-stalker-green text-sm hidden lg:table-cell">Bids</th>
+                      <th className="text-left py-2 md:py-3 px-2 md:px-4 rounded-tr-lg text-stalker-green text-sm">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {pagedProjects.map((project, index) => (
                       <tr key={project.id} className={`border-b border-stalker-border ${index % 2 === 0 ? 'bg-stalker-dark' : 'bg-stalker-darker'} hover:bg-stalker-card transition-colors`}>
-                        <td className="py-3 px-4 text-stalker-text">{project.id}</td>
-                        <td className="py-3 px-4 font-medium text-stalker-green">{project.title}</td>
-                        <td className="py-3 px-4 text-stalker-text">{project.client}</td>
-                        <td className="py-3 px-4">
+                        <td className="py-2 md:py-3 px-2 md:px-4 text-stalker-text text-sm">{project.id}</td>
+                        <td className="py-2 md:py-3 px-2 md:px-4 font-medium text-stalker-green text-sm">{project.title}</td>
+                        <td className="py-2 md:py-3 px-2 md:px-4 text-stalker-text text-sm hidden sm:table-cell truncate max-w-[100px]">{project.client}</td>
+                        <td className="py-2 md:py-3 px-2 md:px-4">
                           <Badge
                             variant={project.status === 'open' ? 'default' : project.status === 'completed' ? 'secondary' : 'outline'}
-                            className={project.status === 'open' ? 'bg-stalker-green text-stalker-dark' : project.status === 'completed' ? 'bg-stalker-blue text-stalker-dark' : 'bg-stalker-border text-stalker-text'}
+                            className={`text-xs ${project.status === 'open' ? 'bg-stalker-green text-stalker-dark' : project.status === 'completed' ? 'bg-stalker-blue text-stalker-dark' : 'bg-stalker-border text-stalker-text'}`}
                           >
                             {project.status}
                           </Badge>
                         </td>
-                        <td className="py-3 px-4 text-stalker-text">{project.budget}</td>
-                        <td className="py-3 px-4 text-stalker-text">{project.bids}</td>
-                        <td className="py-3 px-4">
-                          <div className="flex space-x-2">
+                        <td className="py-2 md:py-3 px-2 md:px-4 text-stalker-text text-sm hidden md:table-cell">{project.budget}</td>
+                        <td className="py-2 md:py-3 px-2 md:px-4 text-stalker-text text-sm hidden lg:table-cell">{project.bids}</td>
+                        <td className="py-2 md:py-3 px-2 md:px-4">
+                          <div className="flex space-x-1 md:space-x-2">
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="border-stalker-border text-stalker-text hover:bg-stalker-border">
-                                  <EyeIcon className="h-4 w-4" />
+                                <Button variant="outline" size="sm" className="border-stalker-border text-stalker-text hover:bg-stalker-border h-8 w-8 p-0">
+                                  <EyeIcon className="h-3 w-3 md:h-4 md:w-4" />
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="bg-stalker-card border-stalker-border text-stalker-text max-w-2xl max-h-[80vh] overflow-y-auto">
+                              <DialogContent className="bg-stalker-card border-stalker-border text-stalker-text max-w-[95vw] md:max-w-2xl max-h-[80vh] overflow-y-auto">
                                 <DialogHeader>
-                                  <DialogTitle className="text-stalker-green text-2xl">Project Details</DialogTitle>
+                                  <DialogTitle className="text-stalker-green text-xl">Project Details</DialogTitle>
                                 </DialogHeader>
-                                <div className="grid grid-cols-2 gap-4 py-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
                                   <div className="space-y-2">
                                     <h3 className="font-semibold text-stalker-green">Project Information</h3>
-                                    <p><span className="text-stalker-muted">ID:</span> {project.id}</p>
-                                    <p><span className="text-stalker-muted">Title:</span> {project.title}</p>
-                                    <p><span className="text-stalker-muted">Client:</span> {project.client}</p>
-                                    <p><span className="text-stalker-muted">Status:</span> {project.status}</p>
-                                    <p><span className="text-stalker-muted">Posted:</span> {project.posted}</p>
-                                    <p><span className="text-stalker-muted">Budget:</span> {project.budget}</p>
+                                    <p className="text-sm"><span className="text-stalker-muted">ID:</span> {project.id}</p>
+                                    <p className="text-sm"><span className="text-stalker-muted">Title:</span> {project.title}</p>
+                                    <p className="text-sm"><span className="text-stalker-muted">Client:</span> {project.client}</p>
+                                    <p className="text-sm"><span className="text-stalker-muted">Status:</span> {project.status}</p>
+                                    <p className="text-sm"><span className="text-stalker-muted">Posted:</span> {project.posted}</p>
+                                    <p className="text-sm"><span className="text-stalker-muted">Budget:</span> {project.budget}</p>
                                   </div>
                                   <div className="space-y-2">
                                     <h3 className="font-semibold text-stalker-green">Project Details</h3>
-                                    <p><span className="text-stalker-muted">Bids:</span> {project.bids}</p>
+                                    <p className="text-sm"><span className="text-stalker-muted">Bids:</span> {project.bids}</p>
                                   </div>
                                 </div>
-                                <div className="flex justify-end space-x-2 pt-4 border-t border-stalker-border">
-                                  <Button variant="outline" className="border-stalker-yellow text-stalker-yellow hover:bg-stalker-yellow/10" onClick={() => handleStatusToggle(project)}>
+                                <div className="flex flex-wrap justify-end gap-2 pt-4 border-t border-stalker-border">
+                                  <Button variant="outline" className="border-stalker-yellow text-stalker-yellow hover:bg-stalker-yellow/10 text-sm" onClick={() => handleStatusToggle(project)}>
                                     {project.status === 'open' ? (
                                       <>
-                                        <BanIcon className="h-4 w-4 mr-2" />
-                                        Deactivate
+                                        <BanIcon className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                                        <span className="hidden sm:inline">Deactivate</span>
                                       </>
                                     ) : (
                                       <>
-                                        <CheckCircleIcon className="h-4 w-4 mr-2" />
-                                        Activate
+                                        <CheckCircleIcon className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                                        <span className="hidden sm:inline">Activate</span>
                                       </>
                                     )}
                                   </Button>
                                 </div>
                               </DialogContent>
                             </Dialog>
-                            <Button variant="outline" size="sm" className="border-stalker-border text-stalker-text hover:bg-stalker-border" onClick={() => handleStatusToggle(project)}>
+                            <Button variant="outline" size="sm" className="border-stalker-border text-stalker-text hover:bg-stalker-border h-8 px-2 text-xs" onClick={() => handleStatusToggle(project)}>
                               {project.status === 'open' ? (
                                 <>
-                                  <BanIcon className="h-4 w-4 mr-2" />
-                                  Deactivate
+                                  <BanIcon className="h-3 w-3 mr-1" />
+                                  <span className="hidden sm:inline">Deactivate</span>
                                 </>
                               ) : (
                                 <>
-                                  <CheckCircleIcon className="h-4 w-4 mr-2" />
-                                  Activate
+                                  <CheckCircleIcon className="h-3 w-3 mr-1" />
+                                  <span className="hidden sm:inline">Activate</span>
                                 </>
                               )}
                             </Button>
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="border-stalker-border text-stalker-text hover:bg-stalker-border" onClick={() => openEdit(project)}>
+                                <Button variant="outline" size="sm" className="border-stalker-border text-stalker-text hover:bg-stalker-border h-8 px-2 text-xs" onClick={() => openEdit(project)}>
                                   Edit
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="bg-stalker-card border-stalker-border text-stalker-text max-w-lg">
+                              <DialogContent className="bg-stalker-card border-stalker-border text-stalker-text max-w-[95vw] md:max-w-lg">
                                 <DialogHeader>
-                                  <DialogTitle className="text-stalker-green text-2xl">Edit Project</DialogTitle>
+                                  <DialogTitle className="text-stalker-green text-xl">Edit Project</DialogTitle>
                                 </DialogHeader>
                                 <div className="space-y-4">
                                   {editError && <p className="text-sm text-stalker-red">{editError}</p>}
@@ -392,16 +396,16 @@ export default function AdminProjectsPage() {
                                     </select>
                                   </div>
                                   <div className="flex gap-2">
-                                    <Button onClick={handleSaveEdit} disabled={saving}>
+                                    <Button onClick={handleSaveEdit} disabled={saving} className="text-sm">
                                       {saving ? "..." : "Save"}
                                     </Button>
-                                    <Button variant="outline" onClick={() => setEditProject(null)}>Cancel</Button>
+                                    <Button variant="outline" onClick={() => setEditProject(null)} className="text-sm">Cancel</Button>
                                   </div>
                                 </div>
                               </DialogContent>
                             </Dialog>
-                            <Button variant="outline" size="sm" className="border-stalker-border text-stalker-text hover:bg-stalker-border" onClick={() => handleDelete(project.id)}>
-                              <TrashIcon className="h-4 w-4" />
+                            <Button variant="outline" size="sm" className="border-stalker-border text-stalker-text hover:bg-stalker-border h-8 w-8 p-0" onClick={() => handleDelete(project.id)}>
+                              <TrashIcon className="h-3 w-3" />
                             </Button>
                           </div>
                         </td>
@@ -410,15 +414,11 @@ export default function AdminProjectsPage() {
                   </tbody>
                 </table>
               </div>
-              <div className="flex items-center justify-between pt-4 text-sm text-stalker-muted">
-                <span>Page {page} of {totalPages}</span>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-4 text-sm text-stalker-muted">
+                <span className="text-xs sm:text-sm">Page {page} of {totalPages}</span>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                    Previous
-                  </Button>
-                  <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
-                    Next
-                  </Button>
+                  <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="text-xs sm:text-sm">Prev</Button>
+                  <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="text-xs sm:text-sm">Next</Button>
                 </div>
               </div>
             </CardContent>

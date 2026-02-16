@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
@@ -9,9 +9,22 @@ import { RadiationIcon, UserIcon, BriefcaseIcon, SettingsIcon, LogOutIcon, MenuI
 
 export function StalkerSidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const pathname = usePathname();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
+
+  // Track if we're in compact mode (tablets: 768px - 1024px)
+  const [isCompactMode, setIsCompactMode] = useState(false);
+  
+  useEffect(() => {
+    const checkSize = () => {
+      setIsCompactMode(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
+    checkSize();
+    window.addEventListener('resize', checkSize);
+    return () => window.removeEventListener('resize', checkSize);
+  }, []);
 
   const navItems = [
     { href: "/admin", label: "Dashboard", icon: RadiationIcon },
@@ -33,31 +46,50 @@ export function StalkerSidebar() {
 
   return (
     <>
-      {/* Mobile menu button */}
+      {/* Mobile menu button - FAB style - shows only on small screens below md */}
       <Button
         variant="ghost"
         size="icon"
-        className="lg:hidden fixed top-4 left-4 z-50 bg-stalker-dark text-stalker-green border-stalker-border"
+        className="md:hidden fixed bottom-4 right-4 z-50 bg-stalker-green text-stalker-dark border-stalker-border shadow-lg shadow-stalker-green/30 hover:bg-stalker-yellow"
         onClick={toggleSidebar}
       >
         {isOpen ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
       </Button>
 
-      {/* Sidebar */}
+      {/* Sidebar - Full screen on mobile, side on tablet+ desktop */}
       <div 
-        className={`fixed lg:relative z-40 h-full w-64 bg-stalker-dark border-r border-stalker-border transform transition-transform duration-300 ease-in-out ${
+        className={`fixed md:relative z-40 h-full bg-stalker-dark border-r border-stalker-border transform transition-all duration-300 ease-in-out ${
+          // lg+: always full width, md-md: collapsible, mobile: full screen when open
+          isOpen || isHovered ? 'lg:w-64 w-72 md:w-64' : (isCompactMode ? 'lg:w-64 w-16 md:w-16' : 'lg:w-64')
+        } ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
+        } md:translate-x-0`}
+        onMouseEnter={() => isCompactMode && setIsHovered(true)}
+        onMouseLeave={() => isCompactMode && setIsHovered(false)}
+        onClick={() => isCompactMode && setIsOpen(!isOpen)}
       >
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-8">
-            <RadiationIcon className="h-8 w-8 text-stalker-green" />
-            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow">
-              ZONE CONTROL
-            </h2>
+        <div className="p-2 md:p-2 h-full overflow-y-auto">
+          {/* Header - always visible */}
+          <div className="flex items-center justify-center md:justify-between mb-4 md:mb-6 px-1">
+            <div className="flex items-center gap-2">
+              <RadiationIcon className="h-7 w-7 text-stalker-green flex-shrink-0" />
+              {(isOpen || isHovered || !isCompactMode) && (
+                <h2 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow whitespace-nowrap">
+                  ZONE
+                </h2>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden text-stalker-muted hover:text-stalker-text"
+              onClick={toggleSidebar}
+            >
+              <XIcon className="h-5 w-5" />
+            </Button>
           </div>
           
-          <nav className="space-y-2">
+          <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -72,11 +104,13 @@ export function StalkerSidebar() {
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <Icon className={`h-5 w-5 ${isActive ? 'text-stalker-green' : 'text-stalker-muted'}`} />
-                      <span className={`${isActive ? 'text-stalker-green font-semibold' : 'text-stalker-text'}`}>
-                        {item.label}
-                      </span>
+                    <CardContent className={`p-2 md:p-2.5 flex items-center ${isCompactMode ? 'justify-center' : 'justify-start'} gap-2 md:gap-3`}>
+                      <Icon className={`h-5 w-5 flex-shrink-0 ${isActive ? 'text-stalker-green' : 'text-stalker-muted'}`} />
+                      {(isOpen || isHovered || !isCompactMode) && (
+                        <span className={`text-sm whitespace-nowrap ${isActive ? 'text-stalker-green font-semibold' : 'text-stalker-text'}`}>
+                          {item.label}
+                        </span>
+                      )}
                     </CardContent>
                   </Card>
                 </Link>
@@ -88,9 +122,11 @@ export function StalkerSidebar() {
                 className="cursor-pointer transition-all duration-200 bg-stalker-card hover:bg-stalker-darker border-stalker-border mt-4"
                 onClick={() => setIsOpen(false)}
               >
-                <CardContent className="p-4 flex items-center gap-3">
-                  <LogOutIcon className="h-5 w-5 text-stalker-red" />
-                  <span className="text-stalker-text">Exit Zone</span>
+                <CardContent className={`p-2 md:p-2.5 flex items-center ${isCompactMode ? 'justify-center' : 'justify-start'} gap-2 md:gap-3`}>
+                  <LogOutIcon className="h-5 w-5 text-stalker-red flex-shrink-0" />
+                  {(isOpen || isHovered || !isCompactMode) && (
+                    <span className="text-sm text-stalker-text whitespace-nowrap">Exit Zone</span>
+                  )}
                 </CardContent>
               </Card>
             </Link>
@@ -101,7 +137,7 @@ export function StalkerSidebar() {
       {/* Overlay for mobile */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/70 z-30 md:hidden backdrop-blur-sm"
           onClick={toggleSidebar}
         />
       )}

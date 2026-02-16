@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { SearchIcon, MapPinIcon, ClockIcon, DollarSignIcon } from "lucide-react";
 import { useTranslation } from 'react-i18next';
-import { useEffect, useMemo, useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { apiRequest } from "@/lib/api-client";
 import { useAuth } from "@/components/auth-provider";
 import Link from "next/link";
@@ -136,29 +136,42 @@ export default function ProjectsPage() {
     setPage(1);
   };
 
+  const [showFilters, setShowFilters] = useState(false);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      <div className="container py-8 px-4 flex-grow">
-        <div className="mb-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="container py-6 md:py-8 px-4 flex-grow">
+        <div className="mb-6 md:mb-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">{t('projects')}</h1>
-            <p className="text-muted-foreground">Find the perfect project to showcase your skills</p>
+            <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">{t('projects')}</h1>
+            <p className="text-muted-foreground text-sm md:text-base">Find the perfect project to showcase your skills</p>
           </div>
-          {isAuthenticated && user?.role !== "freelancer" && (
-            <Button asChild>
-              <Link href="/projects/new">Create Project</Link>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              className="md:hidden"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <SearchIcon className="h-4 w-4 mr-2" />
+              Filters
             </Button>
-          )}
+            {isAuthenticated && user?.role !== "freelancer" && (
+              <Button asChild>
+                <Link href="/projects/new">Create Project</Link>
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="w-full md:w-64 flex-shrink-0">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+            {/* Filters Sidebar */}
+            <div className={`${showFilters ? 'block' : 'hidden'} md:block w-full md:w-64 flex-shrink-0`}>
               <Card>
-                <CardHeader>
-                  <CardTitle>Filters</CardTitle>
+                <CardHeader className="pb-3 md:pb-4">
+                  <CardTitle className="text-lg">Filters</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -176,7 +189,7 @@ export default function ProjectsPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Budget Range</label>
-                    <select className="w-full p-2 border rounded-md">
+                    <select className="w-full p-2 border rounded-md text-sm">
                       <option>All Budgets</option>
                       <option>Under $500</option>
                       <option>$500 - $1,000</option>
@@ -188,7 +201,7 @@ export default function ProjectsPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Project Type</label>
-                    <select className="w-full p-2 border rounded-md">
+                    <select className="w-full p-2 border rounded-md text-sm">
                       <option>All Types</option>
                       <option>Fixed Price</option>
                       <option>Hourly</option>
@@ -197,7 +210,7 @@ export default function ProjectsPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Experience Level</label>
-                    <select className="w-full p-2 border rounded-md">
+                    <select className="w-full p-2 border rounded-md text-sm">
                       <option>All Levels</option>
                       <option>Entry Level</option>
                       <option>Intermediate</option>
@@ -208,65 +221,66 @@ export default function ProjectsPage() {
               </Card>
             </div>
 
+            {/* Projects List */}
             <div className="flex-1">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold">Available Projects</h2>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <h2 className="text-lg md:text-xl font-semibold">Available Projects</h2>
                 <p className="text-sm text-muted-foreground">{filteredProjects.length} projects found</p>
               </div>
 
               {showNoResults ? (
-                <div className="text-center py-12">
-                  <h3 className="text-xl font-semibold mb-2">No results found</h3>
+                <div className="text-center py-8 md:py-12">
+                  <h3 className="text-lg md:text-xl font-semibold mb-2">No results found</h3>
                   <p className="text-muted-foreground mb-4">
                     We couldn't find any projects matching "{searchQuery}"
                   </p>
                   <Button onClick={() => setSearchQuery('')}>Clear Search</Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-4 md:gap-6">
                   {filteredProjects.map((project) => (
                     <Card key={project.id} className="hover:shadow-md transition-shadow">
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <CardTitle>{project.title}</CardTitle>
-                          <Badge variant="secondary">{project.budget}</Badge>
+                      <CardHeader className="pb-3">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                          <CardTitle className="text-lg">{project.title}</CardTitle>
+                          <Badge variant="secondary" className="sm:flex-shrink-0">{project.budget}</Badge>
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-muted-foreground mb-4">{project.description}</p>
+                        <p className="text-muted-foreground mb-4 text-sm">{project.description}</p>
 
                         {project.skills.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-4">
+                          <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4">
                             {project.skills.map((skill, idx) => (
-                              <Badge key={idx} variant="outline">{skill}</Badge>
+                              <Badge key={idx} variant="outline" className="text-xs">{skill}</Badge>
                             ))}
                           </div>
                         )}
 
-                        <div className="flex items-center text-sm text-muted-foreground gap-4">
+                        <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-x-3 gap-y-1">
                           <div className="flex items-center">
-                            <MapPinIcon className="mr-1 h-4 w-4" />
+                            <MapPinIcon className="mr-1 h-3.5 w-3.5" />
                             {project.location}
                           </div>
                           <div className="flex items-center">
-                            <ClockIcon className="mr-1 h-4 w-4" />
+                            <ClockIcon className="mr-1 h-3.5 w-3.5" />
                             Posted {project.posted}
                           </div>
                           <div className="flex items-center">
-                            <DollarSignIcon className="mr-1 h-4 w-4" />
+                            <DollarSignIcon className="mr-1 h-3.5 w-3.5" />
                             {project.status}
                           </div>
                         </div>
                       </CardContent>
                       <CardFooter>
-                        <Button>Submit Proposal</Button>
+                        <Button className="w-full sm:w-auto">Submit Proposal</Button>
                       </CardFooter>
                     </Card>
                   ))}
                 </div>
               )}
 
-              <div className="flex justify-center mt-8">
+              <div className="flex justify-center mt-6 md:mt-8">
                 <nav className="flex items-center space-x-2">
                   <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
                     Previous
