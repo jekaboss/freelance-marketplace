@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { MoonIcon, SunIcon, ServerIcon, UserIcon, LogOutIcon, Menu, X } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoonIcon, SunIcon, ServerIcon, UserIcon, LogOutIcon, Menu, X, Briefcase, Users, FileText, Shield, Search, Building2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { Logo } from "@/components/logo";
 import Link from "next/link";
 import { useTranslation } from 'react-i18next';
@@ -31,6 +31,21 @@ function AdminLink({ isAdmin }: { isAdmin: boolean }) {
     <Link href="/admin" className="transition-colors hover:text-foreground/80 text-foreground">
       {t('adminPanel')}
     </Link>
+  );
+}
+
+// Menu item component with icon (for reference)
+function MenuItem({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="flex-shrink-0 mt-0.5">
+        <Icon className="h-5 w-5 text-primary" />
+      </div>
+      <div>
+        <p className="font-medium text-sm">{title}</p>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+    </div>
   );
 }
 
@@ -75,61 +90,122 @@ export function Header() {
         <Logo />
 
         {/* Desktop Navigation - shows on md and larger */}
-        <nav className="hidden md:flex items-center space-x-4 lg:space-x-6 text-sm font-medium">
-          <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground">
-            {t('home')}
-          </Link>
-          <Link href="/projects" className="transition-colors hover:text-foreground/80 text-foreground">
-            {t('projects')}
-          </Link>
-          <Link href="/freelancers" className="transition-colors hover:text-foreground/80 text-foreground">
-            {t('freelancers')}
-          </Link>
-          <Link href="/portfolio" className="transition-colors hover:text-foreground/80 text-foreground">
-            {t('portfolio')}
-          </Link>
-          <Link href="/start-cooperation" className="transition-colors hover:text-foreground/80 text-foreground">
-            {t('startCooperation')}
-          </Link>
+        <nav className="hidden md:flex items-center space-x-2 lg:space-x-4 text-sm font-medium">
+          {/* Замовникам Dropdown - Hover */}
+          <div className="relative group cursor-pointer">
+            <span className="inline-flex items-center px-1 py-2 hover:text-primary transition-colors">
+              {t('forClients')}
+            </span>
+            {/* Dropdown Menu */}
+            <div className="absolute left-0 top-full pt-1 w-80 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="bg-background rounded-md border shadow-lg p-2">
+                <div className="px-3 py-2 border-b mb-1">
+                  <span className="font-semibold text-sm">{t('forClients')}</span>
+                </div>
+                <Link href="/projects/new" className="flex items-start gap-3 px-3 py-3 rounded-md hover:bg-accent transition-colors">
+                  <Briefcase className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">{t('createFreelanceProject')}</p>
+                    <p className="text-xs text-muted-foreground">{t('createFreelanceProjectDesc')}</p>
+                  </div>
+                </Link>
+                <Link href="/vacancies/post" className="flex items-start gap-3 px-3 py-3 rounded-md hover:bg-accent transition-colors">
+                  <Building2 className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">{t('postVacancy')}</p>
+                    <p className="text-xs text-muted-foreground">{t('postVacancyDesc')}</p>
+                  </div>
+                </Link>
+                <Link href="/freelancers" className="flex items-start gap-3 px-3 py-3 rounded-md hover:bg-accent transition-colors">
+                  <Users className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">{t('findFreelancer')}</p>
+                    <p className="text-xs text-muted-foreground">{t('findFreelancerDesc')}</p>
+                  </div>
+                </Link>
+                <Link href="/business-safe" className="flex items-start gap-3 px-3 py-3 rounded-md hover:bg-accent transition-colors">
+                  <Shield className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">{t('businessSafe')}</p>
+                    <p className="text-xs text-muted-foreground">{t('businessSafeDesc')}</p>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Фрилансерам Dropdown - Hover */}
+          <div className="relative group cursor-pointer">
+            <span className="inline-flex items-center px-1 py-2 hover:text-primary transition-colors">
+              {t('forFreelancers')}
+            </span>
+            {/* Dropdown Menu */}
+            <div className="absolute left-0 top-full pt-1 w-72 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="bg-background rounded-md border shadow-lg p-2">
+                <div className="px-3 py-2 border-b mb-1">
+                  <span className="font-semibold text-sm">{t('forFreelancers')}</span>
+                </div>
+                <Link href="/projects" className="flex items-start gap-3 px-3 py-3 rounded-md hover:bg-accent transition-colors">
+                  <Search className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">{t('findFreelanceProject')}</p>
+                    <p className="text-xs text-muted-foreground">{t('findFreelanceProjectDesc')}</p>
+                  </div>
+                </Link>
+                <Link href="/resume/post" className="flex items-start gap-3 px-3 py-3 rounded-md hover:bg-accent transition-colors">
+                  <FileText className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">{t('postResume')}</p>
+                    <p className="text-xs text-muted-foreground">{t('postResumeDesc')}</p>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Вакансії Dropdown - Hover */}
+          <div className="relative group cursor-pointer">
+            <span className="inline-flex items-center px-1 py-2 hover:text-primary transition-colors">
+              {t('vacancies')}
+            </span>
+            {/* Dropdown Menu */}
+            <div className="absolute left-0 top-full pt-1 w-72 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="bg-background rounded-md border shadow-lg p-2">
+                <div className="px-3 py-2 border-b mb-1">
+                  <span className="font-semibold text-sm">{t('vacancies')}</span>
+                </div>
+                <Link href="/vacancies/post" className="flex items-start gap-3 px-3 py-3 rounded-md hover:bg-accent transition-colors">
+                  <Building2 className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">{t('postVacancy')}</p>
+                    <p className="text-xs text-muted-foreground">{t('postVacancyDesc')}</p>
+                  </div>
+                </Link>
+                <Link href="/vacancies" className="flex items-start gap-3 px-3 py-3 rounded-md hover:bg-accent transition-colors">
+                  <FileText className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">{t('listVacancies')}</p>
+                    <p className="text-xs text-muted-foreground">{t('listVacanciesDesc')}</p>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
+
           <AdminLink isAdmin={isAdmin} />
         </nav>
 
         <div className="flex items-center space-x-2 lg:space-x-4">
-          {/* Theme & API buttons - hidden on small mobile */}
-          <div className="hidden sm:flex items-center space-x-1">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Toggle theme">
-                  <SunIcon className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                  <MoonIcon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")}>{t('lightMode')}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>{t('darkMode')}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")}>{t('systemMode')}</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Change API provider">
-                  <ServerIcon className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {apiModes.map((mode) => (
-                  <DropdownMenuItem
-                    key={mode.value}
-                    onClick={() => setApiMode(mode.value)}
-                    className={apiMode === mode.value ? "bg-accent" : ""}
-                  >
-                    {mode.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {/* Theme Toggle */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            aria-label="Toggle theme"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            <SunIcon className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <MoonIcon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          </Button>
 
           {/* User menu or Auth button */}
           {isHydrated && isAuthenticated ? (
@@ -166,7 +242,12 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <AuthModal />
+            <AuthModal defaultTab="signup">
+              <Button variant="ghost" className="gap-2" aria-label="Login">
+                <UserIcon className="h-5 w-5" />
+                <span>{t('login')}</span>
+              </Button>
+            </AuthModal>
           )}
 
           {/* Mobile Menu Button - shows on small screens only */}
@@ -186,41 +267,112 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t bg-background">
           <nav className="container mx-auto px-4 py-4 flex flex-col space-y-2">
-            <Link 
-              href="/" 
-              className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
-              onClick={closeMobileMenu}
-            >
-              {t('home')}
-            </Link>
-            <Link 
-              href="/projects" 
-              className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
-              onClick={closeMobileMenu}
-            >
-              {t('projects')}
-            </Link>
-            <Link 
-              href="/freelancers" 
-              className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
-              onClick={closeMobileMenu}
-            >
-              {t('freelancers')}
-            </Link>
-            <Link 
-              href="/portfolio" 
-              className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
-              onClick={closeMobileMenu}
-            >
-              {t('portfolio')}
-            </Link>
-            <Link 
-              href="/start-cooperation" 
-              className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
-              onClick={closeMobileMenu}
-            >
-              {t('startCooperation')}
-            </Link>
+            {/* Mobile For Clients Section */}
+            <div className="border-b pb-2 mb-2">
+              <p className="px-4 py-2 text-sm font-semibold text-muted-foreground">{t('forClients')}</p>
+              <Link 
+                href="/projects/new" 
+                className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <div className="flex items-center gap-3">
+                  <Briefcase className="h-5 w-5" />
+                  <div>
+                    <p className="font-medium">{t('createFreelanceProject')}</p>
+                    <p className="text-xs text-muted-foreground">{t('createFreelanceProjectDesc')}</p>
+                  </div>
+                </div>
+              </Link>
+              <Link 
+                href="/vacancies/post" 
+                className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <div className="flex items-center gap-3">
+                  <Building2 className="h-5 w-5" />
+                  <div>
+                    <p className="font-medium">{t('postVacancy')}</p>
+                    <p className="text-xs text-muted-foreground">{t('postVacancyDesc')}</p>
+                  </div>
+                </div>
+              </Link>
+              <Link 
+                href="/freelancers" 
+                className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <div className="flex items-center gap-3">
+                  <Users className="h-5 w-5" />
+                  <div>
+                    <p className="font-medium">{t('findFreelancer')}</p>
+                    <p className="text-xs text-muted-foreground">{t('findFreelancerDesc')}</p>
+                  </div>
+                </div>
+              </Link>
+              <Link 
+                href="/business-safe" 
+                className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <div className="flex items-center gap-3">
+                  <Shield className="h-5 w-5" />
+                  <div>
+                    <p className="font-medium">{t('businessSafe')}</p>
+                    <p className="text-xs text-muted-foreground">{t('businessSafeDesc')}</p>
+                  </div>
+                </div>
+              </Link>
+            </div>
+
+            {/* Mobile For Freelancers Section */}
+            <div className="border-b pb-2 mb-2">
+              <p className="px-4 py-2 text-sm font-semibold text-muted-foreground">{t('forFreelancers')}</p>
+              <Link 
+                href="/projects" 
+                className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <div className="flex items-center gap-3">
+                  <Search className="h-5 w-5" />
+                  <div>
+                    <p className="font-medium">{t('findFreelanceProject')}</p>
+                    <p className="text-xs text-muted-foreground">{t('findFreelanceProjectDesc')}</p>
+                  </div>
+                </div>
+              </Link>
+              <Link 
+                href="/resume/post" 
+                className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5" />
+                  <div>
+                    <p className="font-medium">{t('postResume')}</p>
+                    <p className="text-xs text-muted-foreground">{t('postResumeDesc')}</p>
+                  </div>
+                </div>
+              </Link>
+            </div>
+
+            {/* Mobile Vacancies Section */}
+            <div className="border-b pb-2 mb-2">
+              <p className="px-4 py-2 text-sm font-semibold text-muted-foreground">{t('vacancies')}</p>
+              <Link 
+                href="/vacancies" 
+                className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5" />
+                  <div>
+                    <p className="font-medium">{t('listVacancies')}</p>
+                    <p className="text-xs text-muted-foreground">{t('listVacanciesDesc')}</p>
+                  </div>
+                </div>
+              </Link>
+            </div>
+
             {isAdmin && (
               <Link 
                 href="/admin" 

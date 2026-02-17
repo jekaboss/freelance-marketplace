@@ -15,7 +15,7 @@ import { useToast } from "@/components/toast-provider";
 import { UserIcon, FolderIcon, UserCheckIcon, UsersIcon, MessageSquareIcon, BellIcon, SettingsIcon, LogOutIcon, MenuIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export function AuthModal() {
+export function AuthModal({ defaultTab = "login", buttonLabel }: { defaultTab?: "login" | "signup"; buttonLabel?: string }) {
   const { t } = useTranslation();
   const { login, register, logout, isAuthenticated, user, isHydrated } = useAuth();
   const { showToast } = useToast();
@@ -23,6 +23,7 @@ export function AuthModal() {
   
   // Все useState должны быть в начале!
   const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loginEmail, setLoginEmail] = useState("");
@@ -202,14 +203,16 @@ export function AuthModal() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">{t('login')}</Button>
+        <Button variant="outline" className="rounded-full px-6 md:px-8 py-3 md:py-6 text-base md:text-lg">
+          {buttonLabel || t('login')}
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{t('authentication')}</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "signup")} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">{t('login')}</TabsTrigger>
             <TabsTrigger value="signup">{t('signup')}</TabsTrigger>

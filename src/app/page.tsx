@@ -5,8 +5,9 @@ import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { SearchIcon, BriefcaseIcon, UsersIcon, StarIcon, MessageCircleIcon, CheckCircleIcon, ArrowRightIcon } from "lucide-react";
+import { SearchIcon, BriefcaseIcon, UsersIcon, StarIcon, MessageCircleIcon, CheckCircleIcon, ArrowRightIcon, FileText, UserCheck, Wallet, CheckSquare, Rocket, TrendingUp, Shield, Search, Briefcase } from "lucide-react";
 import { useTranslation } from 'react-i18next';
+import { AuthModal } from "@/components/auth-modal";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -118,16 +119,13 @@ export default function Home() {
       <section className="py-8 md:py-16 lg:py-24 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
         <div className="container px-3 sm:px-4 mx-auto text-center">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-            {t('heroTitle')}
+            Best freelancers for your tasks
           </h1>
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-6 md:mb-10">
-            {t('heroSubtitle')}
-          </p>
           
           <div className="max-w-xl mx-auto relative space-y-3">
             <div className="relative">
               <Input 
-                placeholder={t('searchPlaceholder')} 
+                placeholder="Search..." 
                 className="py-3 sm:py-4 pl-10 sm:pl-12 pr-4 rounded-full shadow-md text-sm sm:text-base"
                 id="search-input"
               />
@@ -143,12 +141,12 @@ export default function Home() {
                   if (query) {
                     window.location.href = `/projects?search=${encodeURIComponent(query)}`;
                   } else {
-                    alert('Будь ласка, введіть пошуковий запит');
+                    alert('Please enter a search query');
                   }
                 }
               }}
             >
-              {t('searchPlaceholder')}
+              Search
             </Button>
           </div>
         </div>
@@ -159,8 +157,8 @@ export default function Home() {
         <div className="container px-4 mx-auto">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 md:mb-10">
             <h2 className="text-2xl md:text-3xl font-bold">{t('recentlyOpenedOrders')}</h2>
-            <Button variant="link" className="text-base">
-              {t('viewAll')} <ArrowRightIcon className="ml-2 h-4 w-4" />
+            <Button variant="link" className="text-base" asChild>
+              <a href="/projects">{t('viewAll')} <ArrowRightIcon className="ml-2 h-4 w-4" /></a>
             </Button>
           </div>
           
@@ -235,11 +233,11 @@ export default function Home() {
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6">{t('freelanceMarket')}</h2>
             <p className="text-lg md:text-xl mb-6 md:mb-8">
-              Знайдіть справжніх професіоналів для будь-якого проекту. Проста взаємодія, безпечні платежі та гарантія якості.
+              Find real professionals for any project. Simple interaction, secure payments and quality guarantee.
             </p>
             <div className="flex justify-center">
               <Button asChild className="bg-white text-primary hover:bg-gray-100 rounded-full px-6 md:px-8 py-3 md:py-6 text-base md:text-lg">
-                <a href="/start-cooperation">Розпочати співпрацю</a>
+                <a href="/start-cooperation">Start cooperation</a>
               </Button>
             </div>
           </div>
@@ -272,7 +270,7 @@ export default function Home() {
               <div key={index} className="bg-background p-5 md:p-6 rounded-xl shadow-sm">
                 <h3 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">{audience}</h3>
                 <p className="text-muted-foreground text-sm md:text-base">
-                  Ідеально підходить для цієї категорії клієнтів з урахуванням їхніх специфічних потреб та вимог.
+                  Perfect for this category of clients, taking into account their specific needs and requirements.
                 </p>
               </div>
             ))}
@@ -292,9 +290,9 @@ export default function Home() {
                   1
                 </div>
                 <div>
-                  <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">Безпечні платежі</h3>
+                  <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">Secure Payments</h3>
                   <p className="text-muted-foreground text-sm md:text-base">
-                    Ваші кошти захищені до моменту підтвердження виконання робіт. Ми гарантуємо повернення коштів при незадовільному результаті.
+                    Your funds are protected until work completion is confirmed. We guarantee a refund if you are not satisfied with the result.
                   </p>
                 </div>
               </div>
@@ -304,9 +302,9 @@ export default function Home() {
                   2
                 </div>
                 <div>
-                  <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">Перевірені фахівці</h3>
+                  <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">Verified Professionals</h3>
                   <p className="text-muted-foreground text-sm md:text-base">
-                    Кожен виконавець проходить перевірку та має відгуки попередніх клієнтів. Це забезпечує високу якість виконання робіт.
+                    Each freelancer is verified and has reviews from previous clients. This ensures high-quality work execution.
                   </p>
                 </div>
               </div>
@@ -316,9 +314,9 @@ export default function Home() {
                   3
                 </div>
                 <div>
-                  <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">Зручна комунікація</h3>
+                  <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">Convenient Communication</h3>
                   <p className="text-muted-foreground text-sm md:text-base">
-                    Всі переговори та передача файлів відбуваються в середині платформи, що забезпечує безпеку та зручність.
+                    All negotiations and file transfers take place within the platform, ensuring safety and convenience.
                   </p>
                 </div>
               </div>
@@ -327,17 +325,132 @@ export default function Home() {
         </div>
       </section>
       
+      {/* How It Works */}
+      <section className="py-12 md:py-16">
+        <div className="container px-4 mx-auto">
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 md:mb-12 text-center">How it works</h2>
+          
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-2">
+            {/* Step 1 */}
+            <div className="flex flex-col items-center text-center max-w-[200px]">
+              <div className="bg-primary/10 rounded-full p-4 mb-4">
+                <FileText className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">Publish a project</h3>
+              <p className="text-muted-foreground text-sm">
+                Publish a project for free to find a freelancer
+              </p>
+            </div>
+            
+            {/* Arrow */}
+            <ArrowRightIcon className="h-6 w-6 text-muted-foreground" />
+            
+            {/* Step 2 */}
+            <div className="flex flex-col items-center text-center max-w-[200px]">
+              <div className="bg-primary/10 rounded-full p-4 mb-4">
+                <UserCheck className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">Choose a freelancer</h3>
+              <p className="text-muted-foreground text-sm">
+                Choose a freelancer among those who responded
+              </p>
+            </div>
+            
+            {/* Arrow */}
+            <ArrowRightIcon className="h-6 w-6 text-muted-foreground" />
+            
+            {/* Step 3 */}
+            <div className="flex flex-col items-center text-center max-w-[200px]">
+              <div className="bg-primary/10 rounded-full p-4 mb-4">
+                <Wallet className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">Reserve funds</h3>
+              <p className="text-muted-foreground text-sm">
+                Reserve funds on the service, and the freelancer will start work
+              </p>
+            </div>
+            
+            {/* Arrow */}
+            <ArrowRightIcon className="h-6 w-6 text-muted-foreground" />
+            
+            {/* Step 4 */}
+            <div className="flex flex-col items-center text-center max-w-[200px]">
+              <div className="bg-primary/10 rounded-full p-4 mb-4">
+                <CheckSquare className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">Finish project</h3>
+              <p className="text-muted-foreground text-sm">
+                Check the result and complete the project
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      
       {/* Join Today */}
       <section className="py-12 md:py-16 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
         <div className="container px-4 mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6">Приєднуйтесь вже сьогодні</h2>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6">Join us today</h2>
           <p className="text-lg md:text-xl mb-6 md:mb-8 max-w-2xl mx-auto">
-            Приєднуйтесь до тисяч задоволених клієнтів та фрілансерів, які вже знайшли один одного на нашій платформі
+            Join thousands of satisfied clients and freelancers who have already found each other on our platform
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4">
             <Button asChild className="bg-white text-primary hover:bg-gray-100 rounded-full px-6 md:px-8 py-3 md:py-6 text-base md:text-lg">
               <a href="/start-cooperation">{t('createProfile')}</a>
             </Button>
+          </div>
+        </div>
+      </section>
+      
+      {/* Why Freelancers Choose FreelancePro */}
+      <section className="py-12 md:py-16 bg-muted/30">
+        <div className="container px-4 mx-auto">
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 md:mb-12 text-center">Why freelancers choose FreelancePro</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            <div className="text-center">
+              <div className="bg-primary/10 rounded-full p-4 mb-4 mx-auto w-fit">
+                <Rocket className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">Projects for beginners and pros</h3>
+              <p className="text-muted-foreground text-sm md:text-base">
+                Find projects that match your skill level
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-primary/10 rounded-full p-4 mb-4 mx-auto w-fit">
+                <TrendingUp className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">Honest rating</h3>
+              <p className="text-muted-foreground text-sm md:text-base">
+                Build your reputation with transparent reviews
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-primary/10 rounded-full p-4 mb-4 mx-auto w-fit">
+                <Search className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">Find permanent work</h3>
+              <p className="text-muted-foreground text-sm md:text-base">
+                Search for long-term employment opportunities
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-primary/10 rounded-full p-4 mb-4 mx-auto w-fit">
+                <Shield className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">Secure cooperation</h3>
+              <p className="text-muted-foreground text-sm md:text-base">
+                Guaranteed payment with safe collaboration
+              </p>
+            </div>
+          </div>
+          
+          <div className="text-center mt-8 md:mt-12">
+            <AuthModal defaultTab="signup" buttonLabel="Become a freelancer" />
           </div>
         </div>
       </section>
