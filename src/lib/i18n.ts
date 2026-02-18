@@ -41,9 +41,7 @@ const resources = {
       // Jobs Menu
       postVacancy: 'Post Vacancy',
       postVacancyDesc: 'Find a collaborator for permanent remote or office work',
-      listVacancies: 'List of Vacancies',
-      listVacanciesDesc: 'Browse the list of vacancies and apply for the ones you like',
-      
+
       // Hero Section
       heroTitle: 'Best freelancers for your tasks',
       heroSubtitle: 'Connect with talented professionals and bring your ideas to life',
