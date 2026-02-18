@@ -84,20 +84,21 @@ export default function AdminSettingsPage() {
         </div>
         
         {/* Main content */}
-        <div className="flex-1 container py-12 px-4 relative z-10">
-          <div className="mb-10">
+        <div className="flex-1 py-6 md:py-8 lg:py-12 px-3 md:px-4 relative z-10 flex justify-center w-full">
+          <div className="w-full max-w-7xl">
+          <div className="mb-6 md:mb-8 lg:mb-10">
             <div className="text-center">
-              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow">
+              <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow">
                 SECURE SETTINGS
               </h1>
-              <p className="text-stalker-muted mt-2 flex items-center gap-2 justify-center">
-                <RadiationIcon className="h-4 w-4 text-stalker-yellow" />
+              <p className="text-stalker-muted mt-2 flex items-center gap-2 justify-center text-sm">
+                <RadiationIcon className="h-3 w-3 md:h-4 md:w-4 text-stalker-yellow" />
                 Change your admin credentials here
               </p>
             </div>
           </div>
-          
-          <div className="max-w-2xl mx-auto">
+
+          <div>
             <Card className="bg-stalker-card border-stalker-border shadow-xl overflow-hidden">
               <CardHeader className="text-center pb-2">
                 <div className="p-5 bg-gradient-to-r from-stalker-red to-stalker-orange text-stalker-dark rounded-t-xl -m-5 -mx-5">
@@ -360,9 +361,10 @@ export default function AdminSettingsPage() {
               </CardContent>
             </Card>
           </div>
+          </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );

@@ -170,24 +170,25 @@ export default function AdminActivityLogPage() {
         </div>
         
         {/* Main content */}
-        <div className="flex-1 container py-12 px-4 relative z-10">
-          <div className="mb-10">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="flex-1 py-6 md:py-8 lg:py-12 px-3 md:px-4 relative z-10 flex justify-center w-full">
+          <div className="w-full max-w-7xl">
+          <div className="mb-6 md:mb-8 lg:mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4 mb-6 md:mb-8">
               <div>
-                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow">
                   ZONE ACTIVITY LOG
                 </h1>
-                <p className="text-stalker-muted mt-2 flex items-center gap-2">
-                  <RadiationIcon className="h-4 w-4 text-stalker-yellow" />
+                <p className="text-stalker-muted mt-1 md:mt-2 flex items-center gap-2 text-sm">
+                  <RadiationIcon className="h-3 w-3 md:h-4 md:w-4 text-stalker-yellow" />
                   Real-time monitoring of all system activities
                 </p>
               </div>
-              <Button 
-                onClick={logoutAdmin} 
+              <Button
+                onClick={logoutAdmin}
                 variant="outline"
-                className="flex items-center gap-2 bg-stalker-dark border-stalker-border hover:bg-stalker-darker text-stalker-text"
+                className="flex items-center gap-2 bg-stalker-dark border-stalker-border hover:bg-stalker-darker text-stalker-text text-sm"
               >
-                <LogOutIcon className="h-4 w-4" />
+                <LogOutIcon className="h-3 w-3 md:h-4 md:w-4" />
                 Exit Zone
               </Button>
             </div>
@@ -340,9 +341,10 @@ export default function AdminActivityLogPage() {
               </Card>
             </div>
           </div>
+          </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );

@@ -12,12 +12,12 @@ class RegisterIn(BaseModel):
     role: str
 
 class LoginIn(BaseModel):
-    email: EmailStr
-    password: str = Field(min_length=6)
+    email: str = Field(min_length=3)
+    password: str = Field(min_length=4)
 
 class UserOut(BaseModel):
     id: int
-    email: EmailStr
+    email: str
     full_name: str
     role: str
     avatar_url: Optional[str] = None

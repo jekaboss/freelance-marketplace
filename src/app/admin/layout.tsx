@@ -4,7 +4,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { StalkerSidebar } from "@/components/stalker-sidebar";
 import { useAdmin } from "@/components/admin-provider";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function AdminLayout({
@@ -14,12 +14,18 @@ export default function AdminLayout({
 }) {
   const { isAdmin, isHydrated } = useAdmin();
   const router = useRouter();
+  const pathname = usePathname();
+  const isLoginRoute = pathname === "/admin/login";
 
   useEffect(() => {
-    if (isHydrated && !isAdmin) {
+    if (isHydrated && !isAdmin && !isLoginRoute) {
       router.push('/admin/login');
     }
-  }, [isAdmin, isHydrated, router]);
+  }, [isAdmin, isHydrated, isLoginRoute, router]);
+
+  if (isLoginRoute) {
+    return <>{children}</>;
+  }
 
   // Показуємо Loading поки завантажується
   if (!isHydrated) {
@@ -41,19 +47,25 @@ export default function AdminLayout({
       <Header />
       
       <div className="flex flex-1 relative z-10">
-        {/* Sidebar - visible on md+ screens */}
-        <div className="hidden md:block w-16 lg:w-64 flex-shrink-0 transition-all duration-300">
+        {/* Sidebar - visible on lg+ screens, collapsible on hover */}
+        <div className="hidden lg:block flex-shrink-0 transition-all duration-300">
           <StalkerSidebar />
         </div>
         
-        {/* Mobile sidebar - FAB button for small screens */}
-        <div className="md:hidden fixed bottom-4 right-4 z-50">
+        {/* Mobile/Tablet sidebar - FAB button for small-medium screens */}
+        <div className="lg:hidden">
           <StalkerSidebar />
         </div>
         
-        {/* Main content - with left margin for compact sidebar on tablets */}
-        <div className="flex-1 ml-16 lg:ml-0 container py-6 md:py-8 lg:py-12 px-3 md:px-4">
-          {children}
+        {/* Main content - centered */}
+        <div className="flex-1 py-6 md:py-8 lg:py-12 px-3 md:px-4 w-full overflow-hidden flex justify-center">
+          <style jsx global>{`
+            .admin-page main header.sticky,
+            .admin-page main footer {
+              display: none !important;
+            }
+          `}</style>
+          <main className="w-full max-w-7xl">{children}</main>
         </div>
       </div>
       

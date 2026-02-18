@@ -209,22 +209,36 @@
 
 /* Админ панель - только для страниц админки */
 .admin-page .duration-200 {
-  padding: 0px;
+  padding: 5px;
   margin: 5px;
+	/* width: 42px; */
 }
 .admin-page .py-12 {
   padding-block: calc(var(--spacing) * 0);
 }
+.w-64 {
+   /* width: calc(var(--spacing) * 64); */
+}
+.h-full {
+  /* height: 0%; */
+}
+.left-4 {
+  /* left: calc(var(--spacing) * 63); */
+}
+.top-32 {
+  /* top: calc(var(--spacing) * 26); */
+}
 .admin-page .flex-1 {
-  width: 1530px;
-  margin: 0 auto;
+  /* width: 1530px; */
+  /* margin: 0 auto; */
 }
 .admin-page .mb-10 {
   margin-bottom: calc(var(--spacing) * 5);
-  width: 1245px;
+  width: 100%;
+  max-width: 1245px;
 }
 .admin-page .p-4 {
-  padding: calc(var(--spacing) * 2);
+  padding: calc(var(--spacing) * 4);
 }
 .admin-page .py-8 {
   padding-block: calc(var(--spacing) * 3);
@@ -233,6 +247,88 @@
 /* поіск */
 .admin-page .transform {
   margin-top: -40px;
+}
+
+/* Responsive tables for admin pages */
+.admin-page table {
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .admin-page table {
+    font-size: 0.75rem;
+  }
+  
+  .admin-page th,
+  .admin-page td {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  /* Hide less important columns on mobile */
+  .admin-page .hidden-mobile {
+    display: none;
+  }
+}
+
+/* Responsive cards for admin pages */
+.admin-page .grid {
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .admin-page .grid {
+    gap: 0.75rem;
+  }
+  
+  .admin-page .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-page .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-page .grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Responsive buttons and inputs */
+.admin-page button,
+.admin-page input,
+.admin-page select {
+  min-height: 44px; /* Touch-friendly tap target */
+}
+
+@media (max-width: 640px) {
+  .admin-page button {
+    width: 100%;
+  }
+  
+  .admin-page .flex-col-mobile {
+    flex-direction: column;
+  }
+  
+  .admin-page .flex-col-mobile > * {
+    width: 100%;
+  }
+}
+
+/* Responsive dialog/modal */
+@media (max-width: 640px) {
+  .admin-page [role="dialog"] {
+    max-width: 95vw;
+    margin: 0.5rem;
+  }
+}
+
+/* Sidebar responsive adjustments */
+@media (max-width: 1024px) {
+  .admin-page .sidebar-hidden {
+    display: none;
+  }
 }
 
 /* Mobile-first responsive utilities */

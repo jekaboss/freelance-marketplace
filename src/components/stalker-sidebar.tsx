@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { RadiationIcon, UserIcon, BriefcaseIcon, SettingsIcon, LogOutIcon, MenuIcon, XIcon, BarChart, Shield, FolderPlus, Bell, FileText, DollarSign, MessageSquare, CreditCard, Globe } from "lucide-react";
@@ -13,18 +12,6 @@ export function StalkerSidebar() {
   const pathname = usePathname();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
-
-  // Track if we're in compact mode (tablets: 768px - 1024px)
-  const [isCompactMode, setIsCompactMode] = useState(false);
-  
-  useEffect(() => {
-    const checkSize = () => {
-      setIsCompactMode(window.innerWidth >= 768 && window.innerWidth < 1024);
-    };
-    checkSize();
-    window.addEventListener('resize', checkSize);
-    return () => window.removeEventListener('resize', checkSize);
-  }, []);
 
   const navItems = [
     { href: "/admin", label: "Dashboard", icon: RadiationIcon },
@@ -46,101 +33,150 @@ export function StalkerSidebar() {
 
   return (
     <>
-      {/* Mobile menu button - FAB style - shows only on small screens below md */}
+      {/* Mobile/Tablet menu button - FAB style - shows only on small-medium screens */}
       <Button
         variant="ghost"
         size="icon"
-        className="md:hidden fixed bottom-4 right-4 z-50 bg-stalker-green text-stalker-dark border-stalker-border shadow-lg shadow-stalker-green/30 hover:bg-stalker-yellow"
+        className="lg:hidden fixed top-20 left-4 z-50 bg-stalker-green text-stalker-dark border-stalker-border shadow-lg shadow-stalker-green/30 hover:bg-stalker-yellow"
         onClick={toggleSidebar}
       >
         {isOpen ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
       </Button>
 
-      {/* Sidebar - Full screen on mobile, side on tablet+ desktop */}
+      {/* Mobile/Tablet sidebar - Full screen on mobile/tablet */}
       <div 
-        className={`fixed md:relative z-40 h-full bg-stalker-dark border-r border-stalker-border transform transition-all duration-300 ease-in-out ${
-          // lg+: always full width, md-md: collapsible, mobile: full screen when open
-          isOpen || isHovered ? 'lg:w-64 w-72 md:w-64' : (isCompactMode ? 'lg:w-64 w-16 md:w-16' : 'lg:w-64')
-        } ${
+        className={`fixed lg:hidden left-0 top-32 z-40 flex flex-col w-72 h-[calc(100vh-128px)] bg-stalker-dark border-r border-stalker-border transform transition-all duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0`}
-        onMouseEnter={() => isCompactMode && setIsHovered(true)}
-        onMouseLeave={() => isCompactMode && setIsHovered(false)}
-        onClick={() => isCompactMode && setIsOpen(!isOpen)}
+        }`}
       >
-        <div className="p-2 md:p-2 h-full overflow-y-auto">
-          {/* Header - always visible */}
-          <div className="flex items-center justify-center md:justify-between mb-4 md:mb-6 px-1">
+        <div className="p-2 h-full flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-0 px-1">
             <div className="flex items-center gap-2">
               <RadiationIcon className="h-7 w-7 text-stalker-green flex-shrink-0" />
-              {(isOpen || isHovered || !isCompactMode) && (
-                <h2 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow whitespace-nowrap">
-                  ZONE
-                </h2>
-              )}
+              <h2 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow">
+                ZONE
+              </h2>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden text-stalker-muted hover:text-stalker-text"
-              onClick={toggleSidebar}
-            >
-              <XIcon className="h-5 w-5" />
-            </Button>
           </div>
           
-          <nav className="space-y-1">
+          <nav className="space-y-2 flex-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               
               return (
                 <Link key={item.href} href={item.href}>
-                  <Card 
-                    className={`cursor-pointer transition-all duration-200 ${
+                  <div 
+                    className={`cursor-pointer transition-all duration-200 rounded-lg p-3 flex items-center gap-3 ${
                       isActive 
-                        ? 'bg-stalker-card border-stalker-green shadow-lg shadow-stalker-green/20' 
-                        : 'bg-stalker-card hover:bg-stalker-darker border-stalker-border'
+                        ? 'bg-stalker-card border border-stalker-green shadow-lg shadow-stalker-green/20' 
+                        : 'border border-stalker-border hover:bg-stalker-card'
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
-                    <CardContent className={`p-2 md:p-2.5 flex items-center ${isCompactMode ? 'justify-center' : 'justify-start'} gap-2 md:gap-3`}>
-                      <Icon className={`h-5 w-5 flex-shrink-0 ${isActive ? 'text-stalker-green' : 'text-stalker-muted'}`} />
-                      {(isOpen || isHovered || !isCompactMode) && (
-                        <span className={`text-sm whitespace-nowrap ${isActive ? 'text-stalker-green font-semibold' : 'text-stalker-text'}`}>
-                          {item.label}
-                        </span>
-                      )}
-                    </CardContent>
-                  </Card>
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg border border-stalker-green/50 bg-stalker-darker flex-shrink-0">
+                      <Icon className={`h-6 w-6 ${isActive ? 'text-stalker-green' : 'text-stalker-green'}`} />
+                    </div>
+                    <span className={`text-sm whitespace-nowrap ${isActive ? 'text-stalker-green font-semibold' : 'text-stalker-text'}`}>
+                      {item.label}
+                    </span>
+                  </div>
                 </Link>
               );
             })}
-            
-            <Link href="/admin/login" onClick={(e) => { e.preventDefault(); localStorage.removeItem('isAdmin'); window.location.href = '/admin/login'; }}>
-              <Card 
-                className="cursor-pointer transition-all duration-200 bg-stalker-card hover:bg-stalker-darker border-stalker-border mt-4"
-                onClick={() => setIsOpen(false)}
-              >
-                <CardContent className={`p-2 md:p-2.5 flex items-center ${isCompactMode ? 'justify-center' : 'justify-start'} gap-2 md:gap-3`}>
-                  <LogOutIcon className="h-5 w-5 text-stalker-red flex-shrink-0" />
-                  {(isOpen || isHovered || !isCompactMode) && (
-                    <span className="text-sm text-stalker-text whitespace-nowrap">Exit Zone</span>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
           </nav>
+          
+          {/* Exit button */}
+          <Link href="/admin/login" onClick={(e) => { e.preventDefault(); localStorage.removeItem('isAdmin'); window.location.href = '/admin/login'; }}>
+            <div 
+              className="cursor-pointer transition-all duration-200 rounded-lg p-3 flex items-center gap-3 border border-stalker-border hover:bg-stalker-card mt-auto"
+              onClick={() => setIsOpen(false)}
+            >
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg border border-stalker-red/50 bg-stalker-darker flex-shrink-0">
+                <LogOutIcon className="h-6 w-6 text-stalker-red" />
+              </div>
+              <span className="text-sm text-stalker-text whitespace-nowrap">Exit Zone</span>
+            </div>
+          </Link>
         </div>
       </div>
 
-      {/* Overlay for mobile */}
+      {/* Overlay for mobile/tablet */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/70 z-30 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/70 z-30 lg:hidden backdrop-blur-sm"
           onClick={toggleSidebar}
         />
       )}
+
+      {/* Desktop Sidebar - Icons only by default, expands on hover */}
+      <div 
+        className={`hidden lg:flex fixed left-0 top-0 z-40 flex-col h-full bg-stalker-dark border-r border-stalker-border transition-all duration-300 ease-in-out ${
+          isHovered ? 'w-56' : 'w-24'
+        }`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className="p-4 h-full flex flex-col gap-2">
+          {/* Header - shows icon by default, label on hover */}
+          <div className="flex items-center gap-3 mb-1">
+            <RadiationIcon className="h-8 w-8 text-stalker-green flex-shrink-0" />
+            {isHovered && (
+              <h2 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow whitespace-nowrap">
+                ZONE
+              </h2>
+            )}
+          </div>
+          
+          <nav className="space-y-2 flex-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              
+              return (
+                <Link key={item.href} href={item.href}>
+                  <div 
+                    className={`cursor-pointer transition-all duration-200 rounded-lg p-3 flex items-center gap-3 ${
+                      isActive 
+                        ? 'bg-stalker-card border border-stalker-green shadow-lg shadow-stalker-green/20' 
+                        : 'hover:bg-stalker-card border border-stalker-border'
+                    }`}
+                  >
+                    <div className={`flex items-center justify-center w-10 h-10 rounded-lg border flex-shrink-0 transition-all ${
+                      isActive
+                        ? 'border-stalker-green bg-stalker-darker'
+                        : 'border-stalker-green/30 bg-stalker-darker'
+                    }`}>
+                      <Icon className={`h-6 w-6 ${isActive ? 'text-stalker-green' : 'text-stalker-green'}`} />
+                    </div>
+                    {isHovered && (
+                      <span className={`text-sm whitespace-nowrap transition-opacity ${isActive ? 'text-stalker-green font-semibold' : 'text-stalker-text'}`}>
+                        {item.label}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </nav>
+          
+          {/* Exit button */}
+          <Link href="/admin/login" onClick={(e) => { e.preventDefault(); localStorage.removeItem('isAdmin'); window.location.href = '/admin/login'; }}>
+            <div 
+              className="cursor-pointer transition-all duration-200 rounded-lg p-3 flex items-center gap-3 hover:bg-stalker-card border border-stalker-border mt-auto"
+            >
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg border border-stalker-red/30 bg-stalker-darker flex-shrink-0">
+                <LogOutIcon className="h-6 w-6 text-stalker-red" />
+              </div>
+              {isHovered && (
+                <span className="text-sm text-stalker-text whitespace-nowrap">Exit Zone</span>
+              )}
+            </div>
+          </Link>
+        </div>
+      </div>
+
     </>
   );
 }

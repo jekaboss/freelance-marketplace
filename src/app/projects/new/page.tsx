@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/toast-provider";
 
 export default function NewProjectPage() {
-  const { token, apiMode, isAuthenticated, user } = useAuth();
+  const { token, apiMode, isAuthenticated, user, isHydrated } = useAuth();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const router = useRouter();
@@ -25,6 +25,19 @@ export default function NewProjectPage() {
   const [budget, setBudget] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Не рендеримо контент поки не гідратовано
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <div className="container py-10 px-4 flex-grow flex items-center justify-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const handleSubmit = async () => {
     setError(null);

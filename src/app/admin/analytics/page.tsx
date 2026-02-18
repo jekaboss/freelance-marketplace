@@ -57,30 +57,31 @@ export default function AdminAnalyticsPage() {
         </div>
         
         {/* Main content */}
-        <div className="flex-1 container py-12 px-4 relative z-10">
-          <div className="mb-10">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="flex-1 py-6 md:py-8 lg:py-12 px-3 md:px-4 relative z-10 flex justify-center w-full">
+          <div className="w-full max-w-7xl">
+          <div className="mb-6 md:mb-8 lg:mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4 mb-6 md:mb-8">
               <div>
-                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow">
                   ANALYTICS DASHBOARD
                 </h1>
-                <p className="text-stalker-muted mt-2 flex items-center gap-2">
-                  <RadiationIcon className="h-4 w-4 text-stalker-yellow" />
+                <p className="text-stalker-muted mt-1 md:mt-2 flex items-center gap-2 text-sm">
+                  <RadiationIcon className="h-3 w-3 md:h-4 md:w-4 text-stalker-yellow" />
                   Real-time platform statistics and metrics
                 </p>
               </div>
-              <Button 
-                onClick={logoutAdmin} 
+              <Button
+                onClick={logoutAdmin}
                 variant="outline"
-                className="flex items-center gap-2 bg-stalker-dark border-stalker-border hover:bg-stalker-darker text-stalker-text"
+                className="flex items-center gap-2 bg-stalker-dark border-stalker-border hover:bg-stalker-darker text-stalker-text text-sm"
               >
-                <LogOutIcon className="h-4 w-4" />
+                <LogOutIcon className="h-3 w-3 md:h-4 md:w-4" />
                 Exit Zone
               </Button>
             </div>
-          
+
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8 lg:mb-10">
               {stats.map((stat, index) => {
                 const Icon = stat.icon;
                 return (
@@ -185,9 +186,10 @@ export default function AdminAnalyticsPage() {
               </CardContent>
             </Card>
           </div>
+          </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );

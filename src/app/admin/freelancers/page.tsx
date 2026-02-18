@@ -43,7 +43,7 @@ type FreelancerRow = {
 };
 
 export default function AdminFreelancersPage() {
-  const { isAdmin, logoutAdmin } = useAdmin();
+  const { isAdmin, isHydrated, logoutAdmin } = useAdmin();
   const { token, apiMode } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
@@ -66,10 +66,11 @@ export default function AdminFreelancersPage() {
   const [editError, setEditError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  if (!isAdmin) {
-    router.push('/admin/login');
-    return null;
-  }
+  useEffect(() => {
+    if (isHydrated && !isAdmin) {
+      router.push('/admin/login');
+    }
+  }, [isHydrated, isAdmin, router]);
 
   useEffect(() => {
     const loadFreelancers = async () => {
@@ -204,6 +205,14 @@ export default function AdminFreelancersPage() {
     }
   };
 
+  if (!isHydrated) {
+    return null;
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-stalker-dark text-stalker-text flex flex-col">
       <div className="fixed inset-0 bg-radial-gradient opacity-30 pointer-events-none"></div>
@@ -215,24 +224,25 @@ export default function AdminFreelancersPage() {
           <StalkerSidebar />
         </div>
 
-        <div className="flex-1 container py-12 px-4 relative z-10">
-          <div className="mb-10">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="flex-1 py-6 md:py-8 lg:py-12 px-3 md:px-4 relative z-10 flex justify-center w-full">
+          <div className="w-full max-w-7xl">
+          <div className="mb-6 md:mb-8 lg:mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4 mb-6 md:mb-8">
               <div>
-                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow">
                   FREELANCER CONTROL
                 </h1>
-                <p className="text-stalker-muted mt-2 flex items-center gap-2">
-                  <RadiationIcon className="h-4 w-4 text-stalker-yellow" />
+                <p className="text-stalker-muted mt-1 md:mt-2 flex items-center gap-2 text-sm">
+                  <RadiationIcon className="h-3 w-3 md:h-4 md:w-4 text-stalker-yellow" />
                   Monitor and manage zone freelancers
                 </p>
               </div>
               <Button
                 onClick={logoutAdmin}
                 variant="outline"
-                className="flex items-center gap-2 bg-stalker-dark border-stalker-border hover:bg-stalker-darker text-stalker-text"
+                className="flex items-center gap-2 bg-stalker-dark border-stalker-border hover:bg-stalker-darker text-stalker-text text-sm"
               >
-                <LogOutIcon className="h-4 w-4" />
+                <LogOutIcon className="h-3 w-3 md:h-4 md:w-4" />
                 Exit Zone
               </Button>
             </div>
@@ -290,23 +300,30 @@ export default function AdminFreelancersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {pagedFreelancers.map((freelancer, index) => (
-                      <tr key={freelancer.id} className={`border-b border-stalker-border ${index % 2 === 0 ? 'bg-stalker-dark' : 'bg-stalker-darker'} hover:bg-stalker-card transition-colors`}>
-                        <td className="py-3 px-4 text-stalker-text">{freelancer.id}</td>
-                        <td className="py-3 px-4 font-medium text-stalker-green">{freelancer.name}</td>
-                        <td className="py-3 px-4 text-stalker-text">{freelancer.profession}</td>
-                        <td className="py-3 px-4 text-stalker-text">{freelancer.rating}</td>
-                        <td className="py-3 px-4 text-stalker-text">{freelancer.completedProjects}</td>
-                        <td className="py-3 px-4">
-                          <Badge
-                            variant={freelancer.status === 'Active' ? 'default' : 'outline'}
-                            className={freelancer.status === 'Active' ? 'bg-stalker-green text-stalker-dark' : 'bg-stalker-border text-stalker-text'}
-                          >
-                            {freelancer.status}
-                          </Badge>
+                    {pagedFreelancers.length === 0 ? (
+                      <tr className="border-b border-stalker-border bg-stalker-dark">
+                        <td className="py-8 px-4 text-center text-stalker-muted" colSpan={7}>
+                          No freelancers found. Create a freelancer profile first.
                         </td>
-                        <td className="py-3 px-4">
-                          <div className="flex space-x-2">
+                      </tr>
+                    ) : (
+                      pagedFreelancers.map((freelancer, index) => (
+                        <tr key={freelancer.id} className={`border-b border-stalker-border ${index % 2 === 0 ? 'bg-stalker-dark' : 'bg-stalker-darker'} hover:bg-stalker-card transition-colors`}>
+                          <td className="py-3 px-4 text-stalker-text">{freelancer.id}</td>
+                          <td className="py-3 px-4 font-medium text-stalker-green">{freelancer.name}</td>
+                          <td className="py-3 px-4 text-stalker-text">{freelancer.profession}</td>
+                          <td className="py-3 px-4 text-stalker-text">{freelancer.rating}</td>
+                          <td className="py-3 px-4 text-stalker-text">{freelancer.completedProjects}</td>
+                          <td className="py-3 px-4">
+                            <Badge
+                              variant={freelancer.status === 'Active' ? 'default' : 'outline'}
+                              className={freelancer.status === 'Active' ? 'bg-stalker-green text-stalker-dark' : 'bg-stalker-border text-stalker-text'}
+                            >
+                              {freelancer.status}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex space-x-2">
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button variant="outline" size="sm" className="border-stalker-border text-stalker-text hover:bg-stalker-border">
@@ -414,10 +431,11 @@ export default function AdminFreelancersPage() {
                                 </>
                               )}
                             </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -434,6 +452,7 @@ export default function AdminFreelancersPage() {
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -73,10 +73,6 @@ export default function AdminProjectsPage() {
       router.push('/admin/login');
     }
   }, [mounted, isAdmin, router]);
-
-  if (!mounted) {
-    return null;
-  }
 
   useEffect(() => {
     const loadProjects = async () => {
@@ -203,6 +199,10 @@ export default function AdminProjectsPage() {
     }
   }, [token, editProject, editTitle, editBudget, editStatus, apiMode, t, showToast]);
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-stalker-dark text-stalker-text flex flex-col">
       <div className="fixed inset-0 bg-radial-gradient opacity-30 pointer-events-none"></div>
@@ -218,7 +218,8 @@ export default function AdminProjectsPage() {
           <StalkerSidebar />
         </div>
 
-        <div className="flex-1 container py-6 md:py-8 lg:py-12 px-3 md:px-4 relative z-10">
+        <div className="flex-1 py-6 md:py-8 lg:py-12 px-3 md:px-4 relative z-10 flex justify-center w-full">
+          <div className="w-full max-w-7xl">
           <div className="mb-6 md:mb-8 lg:mb-10">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4 mb-6 md:mb-8">
               <div>
@@ -423,6 +424,7 @@ export default function AdminProjectsPage() {
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
 
@@ -430,3 +432,4 @@ export default function AdminProjectsPage() {
     </div>
   );
 }
+

@@ -17,19 +17,24 @@ from app.models import User, Base
 Base.metadata.create_all(bind=engine)
 
 session = SessionLocal()
+ADMIN_EMAIL = "admin"
+ADMIN_PASSWORD = "0611"
 
 # Check if admin exists
-admin = session.query(User).filter(User.email == "admin").first()
+admin = session.query(User).filter(User.email == ADMIN_EMAIL).first()
+password_hash = bcrypt.hashpw(ADMIN_PASSWORD.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 if admin:
-    print("Admin user already exists!")
+    admin.password_hash = password_hash
+    admin.role = "admin"
+    session.commit()
+    print("Admin user already exists. Credentials were updated.")
+    print(f"Email: {ADMIN_EMAIL}")
+    print(f"Password: {ADMIN_PASSWORD}")
 else:
-    # Hash password using bcrypt
-    password_hash = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    
     # Create admin user
     admin = User(
-        email="admin",
+        email=ADMIN_EMAIL,
         full_name="Admin User",
         password_hash=password_hash,
         role="admin",
@@ -39,7 +44,7 @@ else:
     session.add(admin)
     session.commit()
     print("Admin user created successfully!")
-    print("Email: admin")
-    print("Password: admin123")
+    print(f"Email: {ADMIN_EMAIL}")
+    print(f"Password: {ADMIN_PASSWORD}")
 
 session.close()
