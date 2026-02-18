@@ -242,12 +242,9 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <AuthModal defaultTab="signup">
-              <Button variant="ghost" className="gap-2" aria-label="Login">
-                <UserIcon className="h-5 w-5" />
-                <span>{t('login')}</span>
-              </Button>
-            </AuthModal>
+            <>
+              <AuthModal defaultTab="signup" buttonLabel={t('login')} />
+            </>
           )}
 
           {/* Mobile Menu Button - shows on small screens only */}
