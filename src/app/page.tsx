@@ -16,7 +16,7 @@ export default function Home() {
   const featuredProjects = [
     {
       id: 1,
-      title: "Web Application Development",
+      title: t('webDevelopment'),
       description: "Build a modern web application with React and Node.js",
       budget: "$2,500 - $5,000",
       skills: ["React", "Node.js", "MongoDB"],
@@ -24,7 +24,7 @@ export default function Home() {
     },
     {
       id: 2,
-      title: "Mobile App UI/UX Design",
+      title: t('appDesign'),
       description: "Design intuitive mobile app interfaces for iOS and Android",
       budget: "$1,000 - $2,000",
       skills: ["UI/UX", "Figma", "Prototyping"],
@@ -40,7 +40,7 @@ export default function Home() {
     },
     {
       id: 4,
-      title: "Logo Design & Brand Identity",
+      title: t('logoDesign'),
       description: "Create a professional logo and brand identity package",
       budget: "$500 - $1,500",
       skills: ["Graphic Design", "Branding", "Illustrator"],
@@ -48,7 +48,7 @@ export default function Home() {
     },
     {
       id: 5,
-      title: "Content Writing for Tech Blog",
+      title: t('contentWriting'),
       description: "Write engaging articles about the latest tech trends",
       budget: "$25 - $50/hr",
       skills: ["Content Writing", "Research", "SEO"],
@@ -56,7 +56,7 @@ export default function Home() {
     },
     {
       id: 6,
-      title: "Social Media Marketing Campaign",
+      title: t('socialMediaMarketing'),
       description: "Plan and execute a social media strategy for a startup",
       budget: "$2,000 - $4,000",
       skills: ["Social Media", "Marketing", "Analytics"],

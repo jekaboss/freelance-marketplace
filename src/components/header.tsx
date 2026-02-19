@@ -145,7 +145,7 @@ export function Header() {
                 <div className="px-3 py-2 border-b mb-1">
                   <span className="font-semibold text-sm">{t('forFreelancers')}</span>
                 </div>
-                <Link href="/projects" className="flex items-start gap-3 px-3 py-3 rounded-md hover:bg-accent transition-colors">
+                <Link href="/freelance-work" className="flex items-start gap-3 px-3 py-3 rounded-md hover:bg-accent transition-colors">
                   <Search className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="font-medium text-sm">{t('findFreelanceProject')}</p>
@@ -197,11 +197,12 @@ export function Header() {
 
         <div className="flex items-center space-x-2 lg:space-x-4">
           {/* Theme Toggle */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             aria-label="Toggle theme"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            suppressHydrationWarning
           >
             <SunIcon className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <MoonIcon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -248,12 +249,13 @@ export function Header() {
           )}
 
           {/* Mobile Menu Button - shows on small screens only */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="md:hidden" 
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
+            suppressHydrationWarning
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </Button>
@@ -324,8 +326,8 @@ export function Header() {
             {/* Mobile For Freelancers Section */}
             <div className="border-b pb-2 mb-2">
               <p className="px-4 py-2 text-sm font-semibold text-muted-foreground">{t('forFreelancers')}</p>
-              <Link 
-                href="/projects" 
+              <Link
+                href="/freelance-work"
                 className="px-4 py-3 rounded-lg hover:bg-accent transition-colors"
                 onClick={closeMobileMenu}
               >

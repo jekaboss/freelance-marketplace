@@ -90,7 +90,7 @@ export default function ProjectsPage() {
         if (searchQuery) {
           params.set("search", searchQuery);
         }
-        const { data } = await apiRequest<any>(`/projects?${params.toString()}`, {}, apiMode);
+        const { data } = await apiRequest<unknown>(`/projects?${params.toString()}`, {}, apiMode);
         const items = Array.isArray(data) ? data : data.items || [];
         const mapped = items.map((project: ApiProject) => ({
           id: project.id,
@@ -148,9 +148,9 @@ export default function ProjectsPage() {
             <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">{t('projects')}</h1>
             <p className="text-muted-foreground text-sm md:text-base">Find the perfect project to showcase your skills</p>
           </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
+          <div className="flex gap-2" suppressHydrationWarning>
+            <Button
+              variant="outline"
               className="md:hidden"
               onClick={() => setShowFilters(!showFilters)}
             >
@@ -232,7 +232,7 @@ export default function ProjectsPage() {
                 <div className="text-center py-8 md:py-12">
                   <h3 className="text-lg md:text-xl font-semibold mb-2">No results found</h3>
                   <p className="text-muted-foreground mb-4">
-                    We couldn't find any projects matching "{searchQuery}"
+                    We couldn&apos;t find any projects matching &quot;{searchQuery}&quot;
                   </p>
                   <Button onClick={() => setSearchQuery('')}>Clear Search</Button>
                 </div>
