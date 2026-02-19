@@ -15,6 +15,8 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/toast-provider";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
+const MIN_PASSWORD_LENGTH = 6;
+
 export default function SignupPage() {
   const { t } = useTranslation();
   const { register } = useAuth();
@@ -34,6 +36,15 @@ export default function SignupPage() {
 
   const handleSignup = async () => {
     setError(null);
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      const message = t("errorPasswordTooShort", {
+        min: MIN_PASSWORD_LENGTH,
+        defaultValue: "Password must be at least {{min}} characters",
+      });
+      setError(message);
+      showToast(message, "error");
+      return;
+    }
     if (password !== confirmPassword) {
       setError(t("errorPasswordMismatch"));
       showToast(t("errorPasswordMismatch"), "error");
@@ -62,7 +73,7 @@ export default function SignupPage() {
       if (accountType === "freelancer") {
         router.push("/freelancers");
       } else {
-        router.push("/profile");
+        router.push("/projects/new");
       }
     }, 100);
   };

@@ -71,7 +71,7 @@ function formatDate(dateValue?: string) {
 
 export default function ProjectsPage() {
   const { t } = useTranslation();
-  const { apiMode, isAuthenticated, user } = useAuth();
+  const { apiMode, isAuthenticated, user, isHydrated } = useAuth();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [projects, setProjects] = useState<Project[]>(mockProjects);
   const [loading, setLoading] = useState(false);
@@ -90,7 +90,7 @@ export default function ProjectsPage() {
         if (searchQuery) {
           params.set("search", searchQuery);
         }
-        const { data } = await apiRequest<unknown>(`/projects?${params.toString()}`, {}, apiMode);
+        const { data } = await apiRequest<any>(`/projects?${params.toString()}`, {}, apiMode);
         const items = Array.isArray(data) ? data : data.items || [];
         const mapped = items.map((project: ApiProject) => ({
           id: project.id,
@@ -148,7 +148,7 @@ export default function ProjectsPage() {
             <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">{t('projects')}</h1>
             <p className="text-muted-foreground text-sm md:text-base">Find the perfect project to showcase your skills</p>
           </div>
-          <div className="flex gap-2" suppressHydrationWarning>
+          <div className="flex gap-2">
             <Button
               variant="outline"
               className="md:hidden"
@@ -157,7 +157,7 @@ export default function ProjectsPage() {
               <SearchIcon className="h-4 w-4 mr-2" />
               Filters
             </Button>
-            {isAuthenticated && user?.role !== "freelancer" && (
+            {isHydrated && isAuthenticated && user?.role !== "freelancer" && (
               <Button asChild>
                 <Link href="/projects/new">Create Project</Link>
               </Button>

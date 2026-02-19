@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -11,23 +11,33 @@ import { useAuth } from "@/components/auth-provider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/toast-provider";
-import { BriefcaseIcon, ArrowRightIcon, DollarSignIcon, ClockIcon, UsersIcon } from "lucide-react";
+import { BriefcaseIcon } from "lucide-react";
+
+const CURRENCIES = [
+  "USD","EUR","UAH","GBP","PLN","CZK","CHF","CAD","AUD","NZD",
+  "JPY","CNY","KRW","SGD","HKD","TWD","THB","MYR","IDR","PHP",
+  "VND","INR","PKR","BDT","LKR","NPR","AED","SAR","QAR","KWD",
+  "BHD","OMR","JOD","ILS","EGP","TRY","GEL","AMD","AZN","KZT",
+  "UZS","RUB","MDL","RON","BGN","HUF","SEK","NOK","DKK","ISK",
+  "RSD","ALL","MKD","BAM","HRK","ZAR","NGN","KES","GHS","MAD",
+  "DZD","TND","BRL","MXN","ARS","CLP","COP","PEN","UYU","BOB",
+  "PYG","CRC","DOP","GTQ","HNL","NIO","PAB","JMD"
+];
 
 export default function PostVacancyPage() {
   const { isAuthenticated, user, isHydrated } = useAuth();
-  const { t } = useTranslation();
   const { showToast } = useToast();
   const router = useRouter();
 
   const [title, setTitle] = useState("");
-  const [company, setCompany] = useState("");
-  const [salary, setSalary] = useState("");
-  const [employment, setEmployment] = useState("");
   const [description, setDescription] = useState("");
-  const [requirements, setRequirements] = useState("");
-  const [location, setLocation] = useState("");
+  const [salaryFrom, setSalaryFrom] = useState("");
+  const [salaryTo, setSalaryTo] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [specialization, setSpecialization] = useState("");
+  const [employmentType, setEmploymentType] = useState<"" | "full-time" | "part-time">("");
+  const [additionalInstructions, setAdditionalInstructions] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -43,7 +53,9 @@ export default function PostVacancyPage() {
     );
   }
 
-  const handleContinue = () => {
+  const handlePublish = () => {
+    setError(null);
+
     if (!title.trim()) {
       setError("Введіть назву вакансії");
       return;
@@ -52,21 +64,50 @@ export default function PostVacancyPage() {
       setError("Введіть опис вакансії");
       return;
     }
+    if (!salaryFrom || !salaryTo) {
+      setError("Вкажіть зарплату від і до");
+      return;
+    }
+    if (Number.isNaN(Number(salaryFrom)) || Number.isNaN(Number(salaryTo))) {
+      setError("Зарплата має бути числом");
+      return;
+    }
+    if (Number(salaryFrom) > Number(salaryTo)) {
+      setError("Зарплата 'від' не може бути більшою за 'до'");
+      return;
+    }
+    if (!specialization.trim()) {
+      setError("Вкажіть спеціалізацію");
+      return;
+    }
+    if (!employmentType) {
+      setError("Оберіть тип зайнятості");
+      return;
+    }
+
     if (!isAuthenticated || !user) {
       router.push(`/login?redirect=/vacancies/post`);
       return;
     }
-    
-    // Зберігаємо дані в localStorage для наступного кроку
-    localStorage.setItem('newVacancyTitle', title);
-    localStorage.setItem('newVacancyCompany', company);
-    localStorage.setItem('newVacancySalary', salary);
-    localStorage.setItem('newVacancyEmployment', employment);
-    localStorage.setItem('newVacancyDescription', description);
-    localStorage.setItem('newVacancyRequirements', requirements);
-    localStorage.setItem('newVacancyLocation', location);
-    
-    router.push('/vacancies/post/step-2');
+
+    setLoading(true);
+
+    const draftVacancy = {
+      title,
+      description,
+      salaryFrom: Number(salaryFrom),
+      salaryTo: Number(salaryTo),
+      currency,
+      specialization,
+      employmentType,
+      additionalInstructions,
+    };
+
+    localStorage.setItem("newVacancyDraft", JSON.stringify(draftVacancy));
+
+    showToast("Вакансію опубліковано", "success");
+    setLoading(false);
+    router.push("/vacancies");
   };
 
   return (
@@ -75,57 +116,20 @@ export default function PostVacancyPage() {
 
       <div className="flex-1 py-6 md:py-8 lg:py-12 px-3 md:px-4">
         <div className="max-w-3xl mx-auto">
-          {/* Header */}
           <div className="mb-6 md:mb-8 text-center">
             <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
               <BriefcaseIcon className="h-8 w-8 text-primary" />
             </div>
             <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              Опублікувати Вакансію
+              Публікація вакансії на постійну віддалену роботу
             </h1>
-            <p className="text-muted-foreground">
-              Крок 1 з 2 - Основна інформація
-            </p>
           </div>
 
-          {/* Info Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <UsersIcon className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="font-semibold text-sm">Швидкий пошук</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Відгуки вже через кілька годин
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <DollarSignIcon className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="font-semibold text-sm">Безкоштовно</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Публікація вакансій безкоштовна
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <ClockIcon className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="font-semibold text-sm">24/7 Доступ</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Керуйте вакансіями у будь-який час
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Form Card */}
           <Card>
             <CardHeader className="text-center pb-2">
-              <CardTitle className="text-lg md:text-xl">
-                Деталі Вакансії
-              </CardTitle>
+              <CardTitle className="text-lg md:text-xl">Деталі вакансії</CardTitle>
             </CardHeader>
+
             <CardContent className="space-y-4 md:space-y-6">
               {error && (
                 <div className="p-3 md:p-4 bg-destructive/10 border border-destructive rounded-lg text-destructive text-sm">
@@ -139,10 +143,9 @@ export default function PostVacancyPage() {
                 </div>
               )}
 
-              {/* Title */}
               <div className="space-y-2">
                 <Label htmlFor="title" className="text-sm md:text-base">
-                  Назва Вакансії *
+                  Назва вакансії *
                 </Label>
                 <Input
                   id="title"
@@ -153,73 +156,9 @@ export default function PostVacancyPage() {
                 />
               </div>
 
-              {/* Company */}
-              <div className="space-y-2">
-                <Label htmlFor="company" className="text-sm md:text-base">
-                  Назва Компанії
-                </Label>
-                <Input
-                  id="company"
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  placeholder="Наприклад: TechCorp"
-                  className="h-10"
-                />
-              </div>
-
-              {/* Salary */}
-              <div className="space-y-2">
-                <Label htmlFor="salary" className="text-sm md:text-base">
-                  Заробітна Плата (опціонально)
-                </Label>
-                <Input
-                  id="salary"
-                  value={salary}
-                  onChange={(e) => setSalary(e.target.value)}
-                  placeholder="Наприклад: 3000-5000"
-                  type="text"
-                  className="h-10"
-                />
-              </div>
-
-              {/* Employment Type */}
-              <div className="space-y-2">
-                <Label htmlFor="employment" className="text-sm md:text-base">
-                  Тип Зайнятості *
-                </Label>
-                <select
-                  id="employment"
-                  value={employment}
-                  onChange={(e) => setEmployment(e.target.value)}
-                  className="w-full p-2 border rounded-lg h-10"
-                >
-                  <option value="">Оберіть тип зайнятості</option>
-                  <option value="Full-time">Повна зайнятість</option>
-                  <option value="Part-time">Часткова зайнятість</option>
-                  <option value="Contract">Контракт</option>
-                  <option value="Freelance">Фріланс</option>
-                  <option value="Remote">Віддалено</option>
-                </select>
-              </div>
-
-              {/* Location */}
-              <div className="space-y-2">
-                <Label htmlFor="location" className="text-sm md:text-base">
-                  Локація
-                </Label>
-                <Input
-                  id="location"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Наприклад: Київ, Україна або Remote"
-                  className="h-10"
-                />
-              </div>
-
-              {/* Description */}
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-sm md:text-base">
-                  Опис Вакансії *
+                  Опис вакансії *
                 </Label>
                 <Textarea
                   id="description"
@@ -230,41 +169,129 @@ export default function PostVacancyPage() {
                 />
               </div>
 
-              {/* Requirements */}
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_180px] gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="salary-from" className="text-sm md:text-base">
+                    Зарплата від *
+                  </Label>
+                  <Input
+                    id="salary-from"
+                    type="number"
+                    min="0"
+                    value={salaryFrom}
+                    onChange={(e) => setSalaryFrom(e.target.value)}
+                    placeholder="1000"
+                    className="h-10"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="salary-to" className="text-sm md:text-base">
+                    Зарплата до *
+                  </Label>
+                  <Input
+                    id="salary-to"
+                    type="number"
+                    min="0"
+                    value={salaryTo}
+                    onChange={(e) => setSalaryTo(e.target.value)}
+                    placeholder="2500"
+                    className="h-10"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="currency" className="text-sm md:text-base">
+                    Валюта *
+                  </Label>
+                  <select
+                    id="currency"
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    className="w-full p-2 border rounded-lg h-10"
+                  >
+                    {CURRENCIES.map((curr) => (
+                      <option key={curr} value={curr}>
+                        {curr}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="requirements" className="text-sm md:text-base">
-                  Вимоги до Кандидата
+                <Label htmlFor="specialization" className="text-sm md:text-base">
+                  Спеціалізація *
+                </Label>
+                <Input
+                  id="specialization"
+                  value={specialization}
+                  onChange={(e) => setSpecialization(e.target.value)}
+                  placeholder="Наприклад: Frontend Developer / UI Designer / QA Engineer"
+                  className="h-10"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-sm md:text-base">Тип зайнятості *</Label>
+
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setEmploymentType("full-time")}
+                    className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                      employmentType === "full-time" ? "border-primary bg-primary/5" : "hover:bg-accent"
+                    }`}
+                  >
+                    <p className="font-medium">Повна зайнятість</p>
+                    <p className="text-sm text-muted-foreground">
+                      Вакансія передбачає наявність робітника на робочому місті протягом усього робочого тижня та всього робочого дня.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setEmploymentType("part-time")}
+                    className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                      employmentType === "part-time" ? "border-primary bg-primary/5" : "hover:bg-accent"
+                    }`}
+                  >
+                    <p className="font-medium">Неповна зайнятість</p>
+                    <p className="text-sm text-muted-foreground">
+                      Завантаження робітника неповне або нерегулярне (обговорюється при співбесіді)
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="instructions" className="text-sm md:text-base">
+                  Додаткові інструкції
                 </Label>
                 <Textarea
-                  id="requirements"
-                  value={requirements}
-                  onChange={(e) => setRequirements(e.target.value)}
-                  placeholder="Вкажіть необхідні навички, досвід та освіту..."
+                  id="instructions"
+                  value={additionalInstructions}
+                  onChange={(e) => setAdditionalInstructions(e.target.value)}
+                  placeholder="Додайте важливі деталі, графік співбесід, формат тестового, дедлайни тощо."
                   className="min-h-[100px]"
                 />
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-4 md:pt-6 space-y-3">
+              <div className="pt-4 md:pt-6">
                 <Button
-                  onClick={handleContinue}
+                  onClick={handlePublish}
                   disabled={loading}
                   className="w-full h-10 text-base"
                 >
-                  Продовжити
-                  <ArrowRightIcon className="h-4 w-4 ml-2" />
+                  {loading ? "Публікація..." : "Опублікувати вакансію"}
                 </Button>
-
-                <Link href="/vacancies" className="block">
-                  <Button variant="outline" className="w-full h-10 text-base">
-                    Скасувати
-                  </Button>
-                </Link>
+                <p className="text-xs text-center text-muted-foreground mt-2">
+                  Вартість розміщення — від 7$
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Help Text */}
           <div className="mt-6 text-center text-sm text-muted-foreground">
             <p>
               Потрібна допомога?{" "}
@@ -280,3 +307,4 @@ export default function PostVacancyPage() {
     </div>
   );
 }
+

@@ -12,6 +12,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/toast-provider";
+import { apiRequest } from "@/lib/api-client";
 import { 
   BriefcaseIcon, 
   PhoneIcon, 
@@ -27,7 +28,7 @@ import { CategorySelectorDialog } from "@/components/category-selector-dialog";
 import { Badge } from "@/components/ui/badge";
 
 export default function NewProjectPage() {
-  const { token, isAuthenticated, user, isHydrated } = useAuth();
+  const { token, apiMode, isAuthenticated, user, isHydrated } = useAuth();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const router = useRouter();
@@ -129,25 +130,7 @@ export default function NewProjectPage() {
     setLoading(true);
     try {
       const budgetValue = budget ? Number(budget) : undefined;
-      
-      // Prepare form data for file upload
-      const formData = new FormData();
-      formData.append("clientId", user.id.toString());
-      formData.append("client_id", user.id.toString());
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("phone", phone);
-      formData.append("categories", JSON.stringify(selectedCategories));
-      formData.append("paymentType", paymentType);
-      if (budgetValue) {
-        formData.append("budget", budgetValue.toString());
-      }
-      
-      attachedFiles.forEach((file) => {
-        formData.append("files", file);
-      });
 
-      // For now, using JSON body - files would need multipart/form-data on backend
       const requestBody = {
         clientId: user.id,
         client_id: user.id,
@@ -160,25 +143,20 @@ export default function NewProjectPage() {
         fileNames: attachedFiles.map(f => f.name),
       };
 
-      // Using API request
-      const response = await fetch("/api/projects", {
+      await apiRequest("/projects", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        throw new Error(t("projectCreatedError"));
-      }
+        token,
+        body: requestBody,
+      }, apiMode);
 
       showToast(t("projectCreatedSuccess"), "success");
       router.push("/projects");
     } catch (error) {
       console.error("Error creating project:", error);
-      showToast(t("projectCreatedError"), "error");
+      const message = error instanceof Error && error.message
+        ? error.message
+        : t("projectCreatedError");
+      showToast(message, "error");
     } finally {
       setLoading(false);
     }

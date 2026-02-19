@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,12 @@ export function CategorySelectorDialog({
   const [searchQuery, setSearchQuery] = useState("");
   const [tempSelected, setTempSelected] = useState<number[]>(selectedCategories);
 
+  useEffect(() => {
+    if (!open) {
+      setTempSelected(selectedCategories);
+    }
+  }, [open, selectedCategories]);
+
   const filteredCategories = defaultCategories.filter((category) =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -85,13 +91,13 @@ export function CategorySelectorDialog({
           className="w-full justify-start text-left font-normal h-auto py-2 min-h-[40px]"
         >
           {selectedCategories.length > 0 ? (
-            <div className="flex flex-wrap gap-1">
+            <span className="inline-flex flex-wrap gap-1">
               {selectedNames.map((name, index) => (
                 <Badge key={index} variant="secondary" className="text-xs">
                   {name}
                 </Badge>
               ))}
-            </div>
+            </span>
           ) : (
             <span className="text-muted-foreground">{t("selectCategories")}</span>
           )}

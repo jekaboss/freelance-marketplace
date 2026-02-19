@@ -15,6 +15,8 @@ import { useToast } from "@/components/toast-provider";
 import { UserIcon, FolderIcon, UserCheckIcon, UsersIcon, MessageSquareIcon, BellIcon, SettingsIcon, LogOutIcon, MenuIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+const MIN_PASSWORD_LENGTH = 6;
+
 export function AuthModal({ defaultTab = "login", buttonLabel }: { defaultTab?: "login" | "signup"; buttonLabel?: string }) {
   const { t } = useTranslation();
   const { login, register, logout, isAuthenticated, user, isHydrated } = useAuth();
@@ -59,6 +61,15 @@ export function AuthModal({ defaultTab = "login", buttonLabel }: { defaultTab?: 
 
   const handleSignup = async () => {
     setError(null);
+    if (signupPassword.length < MIN_PASSWORD_LENGTH) {
+      const message = t("errorPasswordTooShort", {
+        min: MIN_PASSWORD_LENGTH,
+        defaultValue: "Password must be at least {{min}} characters",
+      });
+      setError(message);
+      showToast(message, "error");
+      return;
+    }
     if (signupPassword !== confirmPassword) {
       setError(t("errorPasswordMismatch"));
       showToast(t("errorPasswordMismatch"), "error");
@@ -82,6 +93,11 @@ export function AuthModal({ defaultTab = "login", buttonLabel }: { defaultTab?: 
 
     showToast(t("success"), "success");
     setIsOpen(false);
+    if (accountType === "client") {
+      router.push("/projects/new");
+      return;
+    }
+    router.push("/freelancers");
   };
 
   // Получить initials для аватарки
