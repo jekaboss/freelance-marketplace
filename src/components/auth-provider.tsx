@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { ApiMode, apiRequestToProvider, getApiBase, getProvidersForMode } from "@/lib/api-client";
+import { ApiMode, ApiProvider, apiRequestToProvider, getApiBase, getProvidersForMode } from "@/lib/api-client";
 
 type AuthUser = {
   id: number;
@@ -90,19 +90,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       try {
-        const apiBase = getApiBase("fastapi");
-        
-        const res = await fetch(`${apiBase}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        if (res.ok) {
-          const userData = await res.json();
-          setUser(prev => prev ? { 
-            ...prev, 
-            avatarUrl: userData.avatar_url || userData.avatarUrl || prev.avatarUrl,
-            fullName: userData.full_name || userData.fullName || prev.fullName
-          } : null);
+        const providers = getProvidersForMode(apiMode === "auto" ? "auto" : apiMode);
+        for (const provider of providers) {
+          const apiBase = getApiBase(provider);
+          const res = await fetch(`${apiBase}/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          if (res.ok) {
+            const userData = await res.json();
+            setUser(prev => prev ? {
+              ...prev,
+              avatarUrl: userData.avatar_url || userData.avatarUrl || prev.avatarUrl,
+              fullName: userData.full_name || userData.fullName || prev.fullName
+            } : null);
+            break;
+          }
         }
       } catch (err) {
         console.error("Failed to fetch current user:", err);
@@ -112,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
     
     fetchCurrentUser();
-  }, [token]);
+  }, [token, apiMode]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -143,7 +146,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    const providers = getProvidersForMode(apiMode);
+    const preferredProviders = getProvidersForMode(apiMode);
+    const fallbackProviders: ApiProvider[] = preferredProviders[0] === "nest" ? ["fastapi"] : ["nest"];
+    const providers = Array.from(new Set<ApiProvider>([...preferredProviders, ...fallbackProviders]));
     let lastError: Error | null = null;
 
     for (const provider of providers) {
