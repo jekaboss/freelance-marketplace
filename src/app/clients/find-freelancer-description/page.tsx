@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/components/auth-provider";
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/toast-provider";
@@ -19,7 +19,6 @@ import { SearchIcon, StarIcon, MapPinIcon, BriefcaseIcon, CheckCircleIcon, Arrow
 export default function FindFreelancerDescriptionPage() {
   const { token, apiMode, isAuthenticated, user, isHydrated } = useAuth();
   const { t } = useTranslation();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const { showToast } = useToast();
 

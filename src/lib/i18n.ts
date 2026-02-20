@@ -182,7 +182,6 @@ const resources = {
       topFreelancers: 'Top Freelancers',
       viewAllFreelancers: 'View All Freelancers',
       projects: 'projects',
-      profile: 'Profile',
       hourlyRate: '/hr',
       noFreelancersFound: 'No freelancers found',
       filterByLocation: 'Filter by Location',
@@ -194,8 +193,6 @@ const resources = {
       proposals: 'proposals',
       servicesList: 'Services List',
       remoteServices: 'Remote Services',
-      webDevelopment: 'Web Development',
-      mobileDevelopment: 'Mobile Development',
       designAndCreative: 'Design & Creative',
       writingAndTranslation: 'Writing & Translation',
       videoAndAnimation: 'Video & Animation',
@@ -490,7 +487,7 @@ const resources = {
       projectCreatedError: 'Помилка створення проекту',
     }
   },
-  uk: {
+  ru: {
     translation: {
       // Navigation
       home: 'Головна',
@@ -671,7 +668,6 @@ const resources = {
       topFreelancers: 'Топ Фрілансери',
       viewAllFreelancers: 'Переглянути Всіх Фрілансерів',
       projects: 'проектів',
-      profile: 'Профіль',
       hourlyRate: '/год',
       noFreelancersFound: 'Фрілансерів не знайдено',
       filterByLocation: 'Фільтр за локацією',
@@ -683,8 +679,6 @@ const resources = {
       proposals: 'заявок',
       servicesList: 'Список послуг',
       remoteServices: 'Послуги на віддаленій роботі',
-      webDevelopment: 'Веб-розробка',
-      mobileDevelopment: 'Мобільна розробка',
       designAndCreative: 'Дизайн та творчість',
       writingAndTranslation: 'Написання та переклад',
       videoAndAnimation: 'Відео та анімація',
