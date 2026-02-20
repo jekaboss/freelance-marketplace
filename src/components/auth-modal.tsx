@@ -57,6 +57,18 @@ export function AuthModal({ defaultTab = "login", buttonLabel }: { defaultTab?: 
     }
     showToast(t("success"), "success");
     setIsOpen(false);
+    setTimeout(() => {
+      try {
+        const rawUser = localStorage.getItem("authUser");
+        const role = rawUser ? JSON.parse(rawUser)?.role : undefined;
+        if (role === "admin") {
+          router.push("/admin");
+          return;
+        }
+      } catch {
+        // ignore parse error and keep current page
+      }
+    }, 50);
   };
 
   const handleSignup = async () => {
