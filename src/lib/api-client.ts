@@ -14,8 +14,31 @@ const DEFAULT_FASTAPI_BASE = "http://localhost:4002/api";
 const NEST_BASE = process.env.NEXT_PUBLIC_API_NEST_BASE || DEFAULT_NEST_BASE;
 const FASTAPI_BASE = process.env.NEXT_PUBLIC_API_FASTAPI_BASE || DEFAULT_FASTAPI_BASE;
 
+function normalizeApiBase(base: string) {
+  if (typeof window === "undefined") {
+    return base;
+  }
+
+  try {
+    const url = new URL(base);
+    const isLocalTarget = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+    const currentHost = window.location.hostname;
+    const isLocalClient = currentHost === "localhost" || currentHost === "127.0.0.1";
+
+    if (isLocalTarget && !isLocalClient) {
+      url.hostname = currentHost;
+      return url.toString().replace(/\/$/, "");
+    }
+  } catch {
+    return base;
+  }
+
+  return base;
+}
+
 export function getApiBase(provider: ApiProvider) {
-  return provider === "nest" ? NEST_BASE : FASTAPI_BASE;
+  const rawBase = provider === "nest" ? NEST_BASE : FASTAPI_BASE;
+  return normalizeApiBase(rawBase);
 }
 
 export function getProvidersForMode(mode: ApiMode): ApiProvider[] {

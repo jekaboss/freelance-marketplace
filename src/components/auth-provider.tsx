@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { ApiMode, apiRequestToProvider, getProvidersForMode } from "@/lib/api-client";
+import { ApiMode, apiRequestToProvider, getApiBase, getProvidersForMode } from "@/lib/api-client";
 
 type AuthUser = {
   id: number;
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       try {
-        const apiBase = process.env.NEXT_PUBLIC_API_FASTAPI_BASE || "http://localhost:4002/api";
+        const apiBase = getApiBase("fastapi");
         
         const res = await fetch(`${apiBase}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` }
