@@ -23,13 +23,42 @@ function ServerTime() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Отримати час запуску сервера
+    // Перевірити кеш в sessionStorage
+    const cached = sessionStorage.getItem("serverStartTime");
+    if (cached) {
+      const startTime = new Date(cached);
+      
+      const updateUptime = () => {
+        const now = new Date();
+        const elapsed = now.getTime() - startTime.getTime();
+        const days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((elapsed % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
+        
+        setUptime({ days, hours, minutes });
+      };
+
+      updateUptime();
+      setLoading(false);
+      const interval = setInterval(updateUptime, 1000);
+      return () => clearInterval(interval);
+    }
+
+    // Отримати час запуску сервера з timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 секунди timeout
+
     const fetchServerStartTime = async () => {
       try {
-        const response = await fetch("/api/health");
+        const response = await fetch("/api/health", { signal: controller.signal });
         if (response.ok) {
           const data = await response.json();
-          const startTime = new Date(data.server_start_time);
+          const startTimeStr = data.server_start_time;
+          
+          // Зберегти в кеш
+          sessionStorage.setItem("serverStartTime", startTimeStr);
+          
+          const startTime = new Date(startTimeStr);
           
           const updateUptime = () => {
             const now = new Date();
@@ -49,10 +78,16 @@ function ServerTime() {
       } catch (error) {
         console.warn("Failed to fetch server start time:", error);
         setLoading(false);
+        // Показати хоча б щось
+        setUptime({ days: 0, hours: 0, minutes: 0 });
+      } finally {
+        clearTimeout(timeoutId);
       }
     };
 
     fetchServerStartTime();
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
