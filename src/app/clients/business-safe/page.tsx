@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/toast-provider";
 import { ShieldIcon, LockIcon, CheckCircleIcon, ArrowRightIcon, DollarSignIcon } from "lucide-react";
+import { setUserScopedItem } from "@/lib/user-storage";
 
 export default function BusinessSafePage() {
   const { token, apiMode, isAuthenticated, user, isHydrated } = useAuth();
@@ -49,9 +50,9 @@ export default function BusinessSafePage() {
       return;
     }
     
-    localStorage.setItem('businessSafeProject', projectName);
-    localStorage.setItem('businessSafeAmount', amount);
-    localStorage.setItem('businessSafeMilestones', milestones);
+    setUserScopedItem('businessSafeProject', projectName, user?.id || null);
+    setUserScopedItem('businessSafeAmount', amount, user?.id || null);
+    setUserScopedItem('businessSafeMilestones', milestones, user?.id || null);
     router.push('/clients/business-safe-description');
   };
 

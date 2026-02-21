@@ -191,11 +191,24 @@ def delete_portfolio_item(
 
 @router.delete("/{user_id}")
 def delete_user(user_id: int, _: models.User = Depends(require_role("admin")), db: Session = Depends(get_db)):
-    deleted = db.query(models.User).filter(models.User.id == user_id).delete()
-    db.commit()
-    if not deleted:
-        raise HTTPException(status_code=404, detail="User not found")
-    return {"deleted": True}
+    try:
+        # Сначала удаляем все проекты пользователя (если это клиент)
+        db.query(models.Project).filter(models.Project.client_id == user_id).delete()
+        
+        # Затем удаляем самого пользователя
+        deleted = db.query(models.User).filter(models.User.id == user_id).delete()
+        db.commit()
+        
+        if not deleted:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {"deleted": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        print(f"Delete user error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to delete user: {str(e)}")
 
 
 @router.post("/{user_id}/block")

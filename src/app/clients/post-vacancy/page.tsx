@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/toast-provider";
 import { BriefcaseIcon, ArrowRightIcon } from "lucide-react";
+import { setUserScopedItem } from "@/lib/user-storage";
 
 export default function PostVacancyPage() {
   const { token, apiMode, isAuthenticated, user, isHydrated } = useAuth();
@@ -48,9 +49,9 @@ export default function PostVacancyPage() {
       return;
     }
     // Зберігаємо дані в localStorage для наступного кроку
-    localStorage.setItem('newVacancyTitle', title);
-    localStorage.setItem('newVacancySalary', salary);
-    localStorage.setItem('newVacancyEmployment', employment);
+    setUserScopedItem('newVacancyTitle', title, user?.id || null);
+    setUserScopedItem('newVacancySalary', salary, user?.id || null);
+    setUserScopedItem('newVacancyEmployment', employment, user?.id || null);
     router.push('/clients/post-vacancy-description');
   };
 

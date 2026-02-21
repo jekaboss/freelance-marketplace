@@ -32,6 +32,13 @@ const STORAGE_TOKEN = "authToken";
 const STORAGE_USER = "authUser";
 const STORAGE_API_MODE = "apiMode";
 
+function getAuthStorageItem(key: string): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  return sessionStorage.getItem(key) || localStorage.getItem(key);
+}
+
 function decodeJwt(token: string): { sub?: string; email?: string; role?: AuthUser["role"]; fullName?: string; full_name?: string; avatar_url?: string } {
   const payload = token.split(".")[1];
   if (!payload) {
@@ -53,19 +60,8 @@ function decodeJwt(token: string): { sub?: string; email?: string; role?: AuthUs
 function getInitialAuth() {
   const defaultApiMode = (process.env.NEXT_PUBLIC_API_MODE as ApiMode) || "auto";
 
-  if (typeof window === "undefined") {
-    return { token: null, user: null, apiMode: defaultApiMode };
-  }
-
-  const token = localStorage.getItem(STORAGE_TOKEN);
-  const rawUser = localStorage.getItem(STORAGE_USER);
-  const apiMode = (localStorage.getItem(STORAGE_API_MODE) as ApiMode) || defaultApiMode;
-
-  return {
-    token: token || null,
-    user: rawUser ? (JSON.parse(rawUser) as AuthUser) : null,
-    apiMode,
-  };
+  // Keep initial render deterministic for SSR hydration.
+  return { token: null, user: null, apiMode: defaultApiMode };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -74,6 +70,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(initial.user);
   const [apiMode, setApiModeState] = useState<ApiMode>(initial.apiMode);
   const [isHydrated, setIsHydrated] = useState(false);
+
+  // Load persisted auth state on client after mount to avoid hydration mismatch.
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      const storedToken = getAuthStorageItem(STORAGE_TOKEN);
+      const rawUser = getAuthStorageItem(STORAGE_USER);
+      const storedApiMode = (localStorage.getItem(STORAGE_API_MODE) as ApiMode) || initial.apiMode;
+
+      setToken(storedToken || null);
+      setUser(rawUser ? (JSON.parse(rawUser) as AuthUser) : null);
+      setApiModeState(storedApiMode);
+    } catch {
+      setToken(null);
+      setUser(null);
+      setApiModeState(initial.apiMode);
+    }
+  }, [initial.apiMode]);
 
   // Fetch fresh user data on mount to get updated avatar
   useEffect(() => {
@@ -123,14 +140,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (token) {
-      localStorage.setItem(STORAGE_TOKEN, token);
+      sessionStorage.setItem(STORAGE_TOKEN, token);
+      localStorage.removeItem(STORAGE_TOKEN);
     } else {
+      sessionStorage.removeItem(STORAGE_TOKEN);
       localStorage.removeItem(STORAGE_TOKEN);
     }
 
     if (user) {
-      localStorage.setItem(STORAGE_USER, JSON.stringify(user));
+      sessionStorage.setItem(STORAGE_USER, JSON.stringify(user));
+      localStorage.removeItem(STORAGE_USER);
     } else {
+      sessionStorage.removeItem(STORAGE_USER);
       localStorage.removeItem(STORAGE_USER);
     }
   }, [token, user]);

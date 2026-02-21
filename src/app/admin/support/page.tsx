@@ -9,25 +9,71 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SearchIcon, MessageSquare, Phone, Mail, HelpCircle, Flag, CheckCircle, Clock, User, Tag, RadiationIcon, LogOutIcon, EyeIcon, ReplyIcon } from "lucide-react";
 import { useAdmin } from "@/components/admin-provider";
+import { useAuth } from "@/components/auth-provider";
 import { useRouter } from "next/navigation";
 import { useTranslation } from 'react-i18next';
 import { StalkerSidebar } from "@/components/stalker-sidebar";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+type SupportChatMessage = {
+  id: number;
+  text: string;
+  senderId: number;
+  senderName: string;
+  createdAt: string;
+};
+
+type SupportParticipant = {
+  id: number;
+  name: string;
+  role: "client" | "freelancer" | "admin";
+};
+
+type SupportThread = {
+  id: number;
+  project: string;
+  participants: [SupportParticipant, SupportParticipant];
+  unreadBy: Record<string, number>;
+  messages: SupportChatMessage[];
+};
+
+type SupportTicket = {
+  id: number;
+  user: string;
+  subject: string;
+  category: string;
+  priority: string;
+  status: string;
+  date: string;
+  message: string;
+  agent: string;
+  replies: number;
+  threadId?: number;
+  unread?: number;
+};
+
+const CHAT_STORAGE_KEY = "chatThreads:v1";
+
+function readChatThreads(): SupportThread[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as SupportThread[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 export default function AdminSupportPage() {
   const { isAdmin, logoutAdmin } = useAdmin();
+  const { user, isHydrated, isAuthenticated } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
 
-  if (!isAdmin) {
-    if (typeof window !== 'undefined') {
-      router.push('/admin/login');
-    }
-    return null;
-  }
-
   // Mock data for support tickets
-  const [tickets, setTickets] = useState([
+  const [tickets, setTickets] = useState<SupportTicket[]>([
     { 
       id: 1, 
       user: 'John Smith', 
@@ -91,8 +137,81 @@ export default function AdminSupportPage() {
   ]);
 
   const [activeTab, setActiveTab] = useState('inbox');
-  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [replyText, setReplyText] = useState('');
+  const [chatThreads, setChatThreads] = useState<SupportThread[]>([]);
+
+  useEffect(() => {
+    if (isHydrated && !isAdmin) {
+      router.push("/admin/login");
+    }
+  }, [isHydrated, isAdmin, router]);
+
+  useEffect(() => {
+    if (!isHydrated || !isAuthenticated || user?.role !== "admin") return;
+
+    const refreshThreads = () => {
+      const allThreads = readChatThreads();
+      const adminThreads = allThreads.filter((thread) =>
+        thread.participants.some((participant) => participant.id === user.id)
+      );
+      setChatThreads(adminThreads);
+    };
+
+    refreshThreads();
+
+    const onStorage = (event: StorageEvent) => {
+      if (!event.key || event.key === CHAT_STORAGE_KEY) {
+        refreshThreads();
+      }
+    };
+
+    window.addEventListener("storage", onStorage);
+    const intervalId = window.setInterval(refreshThreads, 1500);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.clearInterval(intervalId);
+    };
+  }, [isHydrated, isAuthenticated, user?.id, user?.role]);
+
+  const chatTickets = useMemo(() => {
+    if (!user) return [];
+    return chatThreads
+      .map((thread) => {
+        const other = thread.participants.find((participant) => participant.id !== user.id);
+        if (!other) return null;
+
+        const lastMessage = thread.messages[thread.messages.length - 1];
+        const unread = thread.unreadBy[String(user.id)] || 0;
+
+        return {
+          id: Number(`900000${thread.id}`),
+          user: other.name,
+          subject: `Chat: ${thread.project}`,
+          category: "technical",
+          priority: unread > 0 ? "high" : "low",
+          status: unread > 0 ? "open" : "in-progress",
+          date: lastMessage?.createdAt
+            ? new Date(lastMessage.createdAt).toLocaleString()
+            : "No messages yet",
+          message: lastMessage?.text || "No messages yet",
+          agent: "Admin chat",
+          replies: thread.messages.length,
+          threadId: thread.id,
+          unread,
+        };
+      })
+      .filter((ticket): ticket is NonNullable<typeof ticket> => Boolean(ticket))
+      .sort((a, b) => {
+        if (a.unread !== b.unread) return b.unread - a.unread;
+        return b.id - a.id;
+      });
+  }, [chatThreads, user]);
+
+  if (!isAdmin) {
+    return null;
+  }
 
   const handleStatusChange = (ticketId: number, newStatus: string) => {
     setTickets(tickets.map(ticket => 
@@ -118,7 +237,12 @@ export default function AdminSupportPage() {
     }
   };
 
-  const filteredTickets = tickets.filter(ticket => {
+  const allTickets = [...chatTickets, ...tickets];
+  const inboxCount = allTickets.filter((ticket) => ticket.status === "open").length;
+  const inProgressCount = allTickets.filter((ticket) => ticket.status === "in-progress").length;
+  const resolvedCount = allTickets.filter((ticket) => ticket.status === "closed").length;
+
+  const filteredTickets = allTickets.filter(ticket => {
     if (activeTab === 'inbox') return ticket.status === 'open';
     if (activeTab === 'in-progress') return ticket.status === 'in-progress';
     if (activeTab === 'resolved') return ticket.status === 'closed';
@@ -181,6 +305,42 @@ export default function AdminSupportPage() {
                 Exit Zone
               </Button>
             </div>
+
+            <Card className="bg-stalker-card border-stalker-border mb-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-stalker-green flex items-center gap-2 text-base">
+                  <MessageSquare className="h-4 w-4" />
+                  User chat messages ({chatTickets.filter((ticket) => ticket.unread > 0).length} unread)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {chatTickets.length === 0 ? (
+                  <p className="text-sm text-stalker-muted">No user messages for support yet.</p>
+                ) : (
+                  chatTickets.slice(0, 5).map((ticket) => (
+                    <button
+                      key={ticket.id}
+                      type="button"
+                      className="w-full text-left p-3 rounded-md border border-stalker-border hover:bg-stalker-darker/70 transition-colors"
+                      onClick={() => {
+                        setSelectedTicket(ticket);
+                        setActiveTab(ticket.unread > 0 ? "inbox" : "in-progress");
+                      }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-medium text-stalker-text">{ticket.user}</p>
+                        {ticket.unread > 0 && (
+                          <span className="inline-flex items-center justify-center rounded-full bg-stalker-green text-stalker-dark text-xs h-5 min-w-5 px-1">
+                            {ticket.unread}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-stalker-muted mt-1">{ticket.subject}</p>
+                    </button>
+                  ))
+                )}
+              </CardContent>
+            </Card>
           
             {/* Tab Navigation */}
             <div className="flex border-b border-stalker-border mb-8">
@@ -193,7 +353,7 @@ export default function AdminSupportPage() {
                 onClick={() => setActiveTab('inbox')}
               >
                 <Mail className="h-4 w-4 inline mr-2" />
-                Inbox ({tickets.filter(t => t.status === 'open').length})
+                Inbox ({inboxCount})
               </button>
               <button
                 className={`py-2 px-4 font-medium ${
@@ -204,7 +364,7 @@ export default function AdminSupportPage() {
                 onClick={() => setActiveTab('in-progress')}
               >
                 <Clock className="h-4 w-4 inline mr-2" />
-                In Progress ({tickets.filter(t => t.status === 'in-progress').length})
+                In Progress ({inProgressCount})
               </button>
               <button
                 className={`py-2 px-4 font-medium ${
@@ -215,7 +375,7 @@ export default function AdminSupportPage() {
                 onClick={() => setActiveTab('resolved')}
               >
                 <CheckCircle className="h-4 w-4 inline mr-2" />
-                Resolved ({tickets.filter(t => t.status === 'closed').length})
+                Resolved ({resolvedCount})
               </button>
             </div>
             
@@ -274,6 +434,11 @@ export default function AdminSupportPage() {
                                 <span>
                                   Replies: {ticket.replies}
                                 </span>
+                                {"unread" in ticket && ticket.unread > 0 && (
+                                  <span className="text-stalker-green">
+                                    New: {ticket.unread}
+                                  </span>
+                                )}
                               </div>
                               <p className="mt-2 text-stalker-muted line-clamp-2">{ticket.message}</p>
                             </div>
@@ -365,62 +530,75 @@ export default function AdminSupportPage() {
                           </div>
                         </div>
                         
-                        <div className="pt-4">
-                          <h4 className="font-medium text-stalker-text mb-2">Reply:</h4>
-                          <Textarea
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                            placeholder="Type your reply here..."
-                            rows={4}
-                            className="bg-stalker-darker border-stalker-border text-stalker-text"
-                          />
-                          <div className="flex gap-2 mt-2">
-                            <Button 
-                              onClick={() => handleReply(selectedTicket.id)}
-                              className="flex-1 bg-stalker-green text-stalker-dark hover:bg-stalker-green/90"
+                        {selectedTicket.threadId ? (
+                          <div className="pt-4">
+                            <Button
+                              onClick={() => router.push("/messages")}
+                              className="w-full bg-stalker-green text-stalker-dark hover:bg-stalker-green/90"
                             >
-                              <ReplyIcon className="h-4 w-4 mr-2" />
-                              Send Reply
+                              Open chat dialog
                             </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="pt-4">
+                              <h4 className="font-medium text-stalker-text mb-2">Reply:</h4>
+                              <Textarea
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                placeholder="Type your reply here..."
+                                rows={4}
+                                className="bg-stalker-darker border-stalker-border text-stalker-text"
+                              />
+                              <div className="flex gap-2 mt-2">
+                                <Button 
+                                  onClick={() => handleReply(selectedTicket.id)}
+                                  className="flex-1 bg-stalker-green text-stalker-dark hover:bg-stalker-green/90"
+                                >
+                                  <ReplyIcon className="h-4 w-4 mr-2" />
+                                  Send Reply
+                                </Button>
+                                
+                                {selectedTicket.status !== 'closed' && (
+                                  <Button 
+                                    onClick={() => handleStatusChange(selectedTicket.id, 'closed')}
+                                    variant="outline"
+                                    className="border-stalker-green text-stalker-green hover:bg-stalker-green/10"
+                                  >
+                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    Close
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
                             
-                            {selectedTicket.status !== 'closed' && (
-                              <Button 
-                                onClick={() => handleStatusChange(selectedTicket.id, 'closed')}
-                                variant="outline"
-                                className="border-stalker-green text-stalker-green hover:bg-stalker-green/10"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Close
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="pt-4">
-                          <h4 className="font-medium text-stalker-text mb-2">Actions:</h4>
-                          <div className="flex flex-wrap gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className={
-                                selectedTicket.status === 'open' 
-                                  ? 'border-stalker-blue text-stalker-blue hover:bg-stalker-blue/10'
-                                  : 'border-stalker-border text-stalker-text hover:bg-stalker-border'
-                              }
-                              onClick={() => handleStatusChange(selectedTicket.id, 'in-progress')}
-                            >
-                              Mark In Progress
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-stalker-yellow text-stalker-yellow hover:bg-stalker-yellow/10"
-                              onClick={() => handleStatusChange(selectedTicket.id, 'open')}
-                            >
-                              Reopen
-                            </Button>
-                          </div>
-                        </div>
+                            <div className="pt-4">
+                              <h4 className="font-medium text-stalker-text mb-2">Actions:</h4>
+                              <div className="flex flex-wrap gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className={
+                                    selectedTicket.status === 'open' 
+                                      ? 'border-stalker-blue text-stalker-blue hover:bg-stalker-blue/10'
+                                      : 'border-stalker-border text-stalker-text hover:bg-stalker-border'
+                                  }
+                                  onClick={() => handleStatusChange(selectedTicket.id, 'in-progress')}
+                                >
+                                  Mark In Progress
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-stalker-yellow text-stalker-yellow hover:bg-stalker-yellow/10"
+                                  onClick={() => handleStatusChange(selectedTicket.id, 'open')}
+                                >
+                                  Reopen
+                                </Button>
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

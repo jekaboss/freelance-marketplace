@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/toast-provider";
 import { RadiationIcon, FileTextIcon, ArrowLeftIcon, CheckCircleIcon } from "lucide-react";
+import { getUserScopedItem, removeUserScopedItem } from "@/lib/user-storage";
 
 export default function PostVacancyDescriptionPage() {
   const { token, apiMode, isAuthenticated, user, isHydrated } = useAuth();
@@ -43,9 +44,9 @@ export default function PostVacancyDescriptionPage() {
   }
 
   useEffect(() => {
-    const title = localStorage.getItem('newVacancyTitle') || '';
-    const salary = localStorage.getItem('newVacancySalary') || '';
-    const employment = localStorage.getItem('newVacancyEmployment') || '';
+    const title = getUserScopedItem('newVacancyTitle', user?.id || null) || '';
+    const salary = getUserScopedItem('newVacancySalary', user?.id || null) || '';
+    const employment = getUserScopedItem('newVacancyEmployment', user?.id || null) || '';
     setVacancyTitle(title);
     setVacancySalary(salary);
     setVacancyEmployment(employment);
@@ -53,7 +54,7 @@ export default function PostVacancyDescriptionPage() {
     if (!title) {
       router.push('/clients/post-vacancy');
     }
-  }, [router]);
+  }, [router, user?.id]);
 
   const handleSubmit = async () => {
     setError(null);
@@ -86,9 +87,9 @@ export default function PostVacancyDescriptionPage() {
 
       if (response.ok) {
         showToast("Вакансію успішно створено!", "success");
-        localStorage.removeItem('newVacancyTitle');
-        localStorage.removeItem('newVacancySalary');
-        localStorage.removeItem('newVacancyEmployment');
+        removeUserScopedItem('newVacancyTitle', user?.id || null);
+        removeUserScopedItem('newVacancySalary', user?.id || null);
+        removeUserScopedItem('newVacancyEmployment', user?.id || null);
         router.push('/projects');
       } else {
         const data = await response.json();
@@ -96,9 +97,9 @@ export default function PostVacancyDescriptionPage() {
       }
     } catch (err) {
       showToast("Вакансію успішно створено! (Demo)", "success");
-      localStorage.removeItem('newVacancyTitle');
-      localStorage.removeItem('newVacancySalary');
-      localStorage.removeItem('newVacancyEmployment');
+      removeUserScopedItem('newVacancyTitle', user?.id || null);
+      removeUserScopedItem('newVacancySalary', user?.id || null);
+      removeUserScopedItem('newVacancyEmployment', user?.id || null);
       router.push('/projects');
     } finally {
       setLoading(false);

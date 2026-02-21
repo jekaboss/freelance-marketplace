@@ -79,7 +79,21 @@ export async function apiRequestToProvider<T>(
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`${provider.toUpperCase()} ${response.status}: ${text || response.statusText}`);
+    let errorDetail = text || response.statusText;
+    
+    // Попробуем парсить JSON ошибку из FastAPI или NestJS
+    try {
+      const json = JSON.parse(text);
+      if (json.detail) {
+        errorDetail = json.detail;
+      } else if (json.message) {
+        errorDetail = json.message;
+      }
+    } catch {
+      // Если это не JSON, используем текст как есть
+    }
+    
+    throw new Error(`${provider.toUpperCase()} ${response.status}: ${errorDetail}`);
   }
 
   if (response.status === 204) {

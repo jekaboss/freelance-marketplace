@@ -118,7 +118,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="py-8 md:py-16 lg:py-24 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
         <div className="container px-3 sm:px-4 mx-auto text-center">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-[140px] font-bold mb-3 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
             Best freelancers for your tasks
           </h1>
           

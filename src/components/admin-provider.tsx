@@ -26,7 +26,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       return false;
     }
 
-    const rawUser = localStorage.getItem("authUser");
+    const rawUser = sessionStorage.getItem("authUser") || localStorage.getItem("authUser");
     if (!rawUser) {
       return false;
     }

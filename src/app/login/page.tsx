@@ -42,7 +42,7 @@ export default function LoginPage() {
     // Get user from localStorage after login
     setTimeout(() => {
       try {
-        const rawUser = localStorage.getItem("authUser");
+        const rawUser = sessionStorage.getItem("authUser") || localStorage.getItem("authUser");
         if (rawUser) {
           const userData = JSON.parse(rawUser);
           if (userData.role === "freelancer") {

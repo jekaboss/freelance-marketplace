@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Comic_Relief, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AdminProvider } from "@/components/admin-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { ToastProvider } from "@/components/toast-provider";
+import { I18nProvider } from "@/components/i18n-provider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const comicRelief = Comic_Relief({
+  variable: "--font-comic-relief",
   subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -28,14 +30,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <AuthProvider>
-            <ToastProvider>
-              <AdminProvider>{children}</AdminProvider>
-            </ToastProvider>
-          </AuthProvider>
-        </ThemeProvider>
+      <body className={`${comicRelief.variable} ${geistMono.variable} antialiased`}>
+        <I18nProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <AuthProvider>
+              <ToastProvider>
+                <AdminProvider>{children}</AdminProvider>
+              </ToastProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </I18nProvider>
       </body>
     </html>
   );

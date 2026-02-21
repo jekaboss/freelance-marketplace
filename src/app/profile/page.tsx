@@ -14,7 +14,7 @@ import { CameraIcon, CalendarIcon, MapPinIcon, DollarSignIcon, StarIcon, Externa
 import { useAuth } from "@/components/auth-provider";
 import { useToast } from "@/components/toast-provider";
 import { apiRequest, getApiBase, getProvidersForMode } from "@/lib/api-client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
 type ApiUser = {
@@ -59,10 +59,13 @@ const setDemoAvatar = (url: string) => {
   localStorage.setItem('demo-admin-avatar', url);
 };
 
+const loadedProfileKeys = new Set<string>();
+
 export default function ProfilePage() {
   const { t } = useTranslation();
-  const { token, apiMode, isAuthenticated, updateUserAvatar, isHydrated, user: authUser } = useAuth();
+  const { token, apiMode, isAuthenticated, updateUserAvatar, isHydrated } = useAuth();
   const { showToast } = useToast();
+  const loadedProfileKeyRef = useRef<string | null>(null);
 
   const [user, setUser] = useState<ApiUser | null>(null);
   const [loadingUser, setLoadingUser] = useState(false);
@@ -115,6 +118,13 @@ export default function ProfilePage() {
   ];
 
   useEffect(() => {
+    const loadKey = isDemoMode ? "demo-mode" : `${token || "no-token"}:${apiMode}`;
+    if (loadedProfileKeyRef.current === loadKey || loadedProfileKeys.has(loadKey)) {
+      return;
+    }
+    loadedProfileKeyRef.current = loadKey;
+    loadedProfileKeys.add(loadKey);
+
     // Демо-режим для адміна
     if (isDemoMode) {
       setUser({ id: 0, email: 'admin@localhost', role: 'admin', fullName: 'Administrator' });
@@ -131,12 +141,18 @@ export default function ProfilePage() {
       return;
     }
 
+    if (!token || !isHydrated) {
+      return;
+    }
+
     const loadProfile = async () => {
-      if (!token) return;
       setLoadingUser(true);
       setError(null);
       try {
         const { data } = await apiRequest<ApiUser>("/auth/me", { token }, apiMode);
+        if (!data) {
+          throw new Error("No user data received");
+        }
         setUser(data);
         setProfileName(data.fullName || data.full_name || "");
         setProfileEmail(data.email);
@@ -152,32 +168,47 @@ export default function ProfilePage() {
         }
 
         const id = data.id;
-        const projectsResponse = await apiRequest<any>(`/projects?clientId=${id}&client_id=${id}`, { token }, apiMode);
-        const projectItems = Array.isArray(projectsResponse.data) ? projectsResponse.data : projectsResponse.data.items || [];
-        setProjects(projectItems);
+        
+        // Load projects
+        try {
+          const projectsResponse = await apiRequest<any>(`/projects?clientId=${id}&client_id=${id}`, { token }, apiMode);
+          const projectItems = Array.isArray(projectsResponse.data) ? projectsResponse.data : projectsResponse.data.items || [];
+          setProjects(projectItems);
+        } catch (projectErr) {
+          console.warn("Failed to load projects:", projectErr);
+          setProjects([]);
+        }
 
+        // Load freelancer profile if applicable
         if (data.role === "freelancer") {
-          const freelancersResponse = await apiRequest<any>(`/freelancers?userId=${id}&user_id=${id}`, { token }, apiMode);
-          const freelancerItems = Array.isArray(freelancersResponse.data) ? freelancersResponse.data : freelancersResponse.data.items || [];
-          const profile = freelancerItems[0] || null;
-          setFreelancerProfile(profile);
-          if (profile) {
-            setFreelancerTitle(profile.title || "");
-            setFreelancerBio(profile.bio || "");
-            setFreelancerSkills((profile.skills || []).join(", "));
-            setFreelancerRate(String(profile.hourlyRate ?? profile.hourly_rate ?? ""));
-            setFreelancerLocation(profile.location || "");
+          try {
+            const freelancersResponse = await apiRequest<any>(`/freelancers?userId=${id}&user_id=${id}`, { token }, apiMode);
+            const freelancerItems = Array.isArray(freelancersResponse.data) ? freelancersResponse.data : freelancersResponse.data.items || [];
+            const profile = freelancerItems[0] || null;
+            setFreelancerProfile(profile);
+            if (profile) {
+              setFreelancerTitle(profile.title || "");
+              setFreelancerBio(profile.bio || "");
+              setFreelancerSkills((profile.skills || []).join(", "));
+              setFreelancerRate(String(profile.hourlyRate ?? profile.hourly_rate ?? ""));
+              setFreelancerLocation(profile.location || "");
+            }
+          } catch (freelancerErr) {
+            console.warn("Failed to load freelancer profile:", freelancerErr);
           }
         }
-      } catch {
-        setError(t("errorLoadFailed"));
+      } catch (err) {
+        console.error("Profile load error:", err);
+        loadedProfileKeys.delete(loadKey);
+        loadedProfileKeyRef.current = null;
+        setError(err instanceof Error ? err.message : t("errorLoadFailed"));
       } finally {
         setLoadingUser(false);
       }
     };
 
     loadProfile();
-  }, [token, apiMode, isDemoMode, updateUserAvatar, t]);
+  }, [token, apiMode, isDemoMode, isHydrated, updateUserAvatar, t]);
 
   const handleProfileSave = async () => {
     if (isDemoMode) {
@@ -291,8 +322,25 @@ export default function ProfilePage() {
     } catch { setFreelancerError(t("errorSaveFailed")); }
   };
 
-  if (!isHydrated) return (<div className="min-h-screen bg-background flex flex-col"><Header /><div className="container py-12 px-4 flex-grow flex items-center justify-center"><p>Loading...</p></div><Footer /></div>);
-  if (!isAuthenticated) return (<div className="min-h-screen bg-background flex flex-col"><Header /><div className="container py-12 px-4 flex-grow flex items-center justify-center"><Card className="w-full max-w-md"><CardHeader><CardTitle>Please sign in</CardTitle></CardHeader><CardContent><p className="text-muted-foreground mb-4">You need an account to view your profile.</p><Button asChild className="w-full"><Link href="/login">Go to Login</Link></Button></CardContent></Card></div><Footer /></div>);
+  if (!isHydrated) return (<div className="min-h-screen bg-background flex flex-col"><Header /><div className="container py-12 px-4 flex-grow flex items-center justify-center"><div className="text-center"><p className="text-muted-foreground mb-2">Loading profile...</p></div></div><Footer /></div>);
+  
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <div className="container py-12 px-4 flex-grow flex items-center justify-center">
+          <Card className="w-full max-w-md">
+            <CardHeader><CardTitle>Please sign in</CardTitle></CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">You need an account to view your profile.</p>
+              <Button asChild className="w-full"><Link href="/login">Go to Login</Link></Button>
+            </CardContent>
+          </Card>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 flex flex-col">
@@ -326,8 +374,22 @@ export default function ProfilePage() {
             </div>
           </Card>
 
-          {loadingUser && <p className="text-muted-foreground mt-4">Loading profile...</p>}
-          {error && <p className="text-red-500 mt-4">{error}</p>}
+          {loadingUser && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Loading profile data...</p>
+            </div>
+          )}
+          
+          {error && (
+            <Card className="border-red-500 bg-red-50 dark:bg-red-950 mt-4">
+              <CardContent className="pt-6">
+                <p className="text-red-600 dark:text-red-400">⚠️ {error}</p>
+                <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
+                  Reload Profile
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
             <TabsList className={`grid w-full ${user?.role === "freelancer" ? "grid-cols-3" : "grid-cols-2"}`}>
@@ -337,7 +399,65 @@ export default function ProfilePage() {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6 mt-6">
-              <Card className="bg-card/50 backdrop-blur-sm shadow-xl"><CardHeader><CardTitle>About Me</CardTitle></CardHeader><CardContent><div className="space-y-4"><div><Label className="text-sm font-medium">Full Name</Label><p className="text-muted-foreground">{displayName}</p></div><div><Label className="text-sm font-medium">Email</Label><p className="text-muted-foreground">{user?.email}</p></div><div><Label className="text-sm font-medium">Role</Label><p className="text-muted-foreground">{user?.role}</p></div></div></CardContent></Card>
+              <Card className="bg-card/50 backdrop-blur-sm shadow-xl">
+                <CardHeader><CardTitle>About Me</CardTitle></CardHeader>
+                <CardContent>
+                  {loadingUser ? (
+                    <p className="text-muted-foreground">{t("loading")}</p>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm font-medium">Full Name</Label>
+                        <p className="text-muted-foreground">{displayName || "-"}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Email</Label>
+                        <p className="text-muted-foreground">{user?.email || "-"}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Role</Label>
+                        <p className="text-muted-foreground capitalize">{user?.role || "-"}</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {user?.role === "freelancer" && freelancerProfile && !loadingUser && (
+                <Card className="bg-card/50 backdrop-blur-sm shadow-xl">
+                  <CardHeader><CardTitle>Freelancer Profile</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm font-medium">Professional Title</Label>
+                        <p className="text-muted-foreground">{freelancerTitle || "-"}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Bio</Label>
+                        <p className="text-muted-foreground whitespace-pre-wrap">{freelancerBio || "-"}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Skills</Label>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {freelancerSkills ? freelancerSkills.split(",").map((skill, idx) => (
+                            <Badge key={idx} variant="secondary">{skill.trim()}</Badge>
+                          )) : <p className="text-muted-foreground">-</p>}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm font-medium">Hourly Rate</Label>
+                          <p className="text-muted-foreground">{freelancerRate ? `$${freelancerRate}/hr` : "-"}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Location</Label>
+                          <p className="text-muted-foreground">{freelancerLocation || "-"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="projects" className="space-y-6 mt-6">

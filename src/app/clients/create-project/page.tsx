@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/toast-provider";
 import { RadiationIcon, BriefcaseIcon, ArrowRightIcon } from "lucide-react";
+import { setUserScopedItem } from "@/lib/user-storage";
 
 export default function CreateProjectPage() {
   const { token, apiMode, isAuthenticated, user, isHydrated } = useAuth();
@@ -44,8 +45,8 @@ export default function CreateProjectPage() {
       return;
     }
     // Зберігаємо дані в localStorage для наступного кроку
-    localStorage.setItem('newProjectTitle', title);
-    localStorage.setItem('newProjectBudget', budget);
+    setUserScopedItem('newProjectTitle', title, user?.id || null);
+    setUserScopedItem('newProjectBudget', budget, user?.id || null);
     router.push('/clients/create-project-description');
   };
 

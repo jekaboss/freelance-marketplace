@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/toast-provider";
 import { RadiationIcon, FileTextIcon, ArrowLeftIcon, CheckCircleIcon } from "lucide-react";
+import { getUserScopedItem, removeUserScopedItem } from "@/lib/user-storage";
 
 export default function CreateProjectDescriptionPage() {
   const { token, apiMode, isAuthenticated, user, isHydrated } = useAuth();
@@ -43,15 +44,15 @@ export default function CreateProjectDescriptionPage() {
 
   useEffect(() => {
     // Завантажуємо дані з попереднього кроку
-    const title = localStorage.getItem('newProjectTitle') || '';
-    const budget = localStorage.getItem('newProjectBudget') || '';
+    const title = getUserScopedItem('newProjectTitle', user?.id || null) || '';
+    const budget = getUserScopedItem('newProjectBudget', user?.id || null) || '';
     setProjectTitle(title);
     setProjectBudget(budget);
 
     if (!title) {
       router.push('/clients/create-project');
     }
-  }, [router]);
+  }, [router, user?.id]);
 
   const handleSubmit = async () => {
     setError(null);
@@ -86,8 +87,8 @@ export default function CreateProjectDescriptionPage() {
 
       if (response.ok) {
         showToast("Проект успішно створено!", "success");
-        localStorage.removeItem('newProjectTitle');
-        localStorage.removeItem('newProjectBudget');
+        removeUserScopedItem('newProjectTitle', user?.id || null);
+        removeUserScopedItem('newProjectBudget', user?.id || null);
         router.push('/projects');
       } else {
         const data = await response.json();
@@ -96,8 +97,8 @@ export default function CreateProjectDescriptionPage() {
     } catch (err) {
       // Для демо-режиму
       showToast("Проект успішно створено! (Demo)", "success");
-      localStorage.removeItem('newProjectTitle');
-      localStorage.removeItem('newProjectBudget');
+      removeUserScopedItem('newProjectTitle', user?.id || null);
+      removeUserScopedItem('newProjectBudget', user?.id || null);
       router.push('/projects');
     } finally {
       setLoading(false);

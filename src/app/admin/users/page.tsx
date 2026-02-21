@@ -158,52 +158,169 @@ export default function AdminUsersPage() {
   const pagedUsers = filteredUsers;
 
   const handleDelete = async (id: number) => {
-    if (!token || isDemoMode) return;
     const confirmed = window.confirm("Delete this user?");
     if (!confirmed) return;
+    
+    if (isDemoMode) {
+      // Демо-режим: удаляем локально
+      setUsers((prev) => prev.filter((user) => user.id !== id));
+      showToast("User deleted (demo mode)", "success");
+      return;
+    }
+    
+    if (!token) {
+      showToast("You are not authenticated. Please log in.", "error");
+      return;
+    }
+    
     try {
       await apiRequest(`/users/${id}`, { method: "DELETE", token }, apiMode);
       setUsers((prev) => prev.filter((user) => user.id !== id));
       showToast(t("success"), "success");
-    } catch {
-      showToast(t("errorDeleteFailed"), "error");
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Unknown error";
+      console.error("Delete failed:", err);
+      
+      if (errMsg.includes("Failed to fetch")) {
+        showToast("API Server is not running. Please start the backend server.", "error");
+      } else if (errMsg.includes("401") || errMsg.includes("Unauthorized")) {
+        showToast("Your session expired. Please re-login.", "error");
+      } else if (errMsg.includes("404")) {
+        showToast("User not found.", "error");
+      } else if (errMsg.includes("400:")) {
+        const detailMatch = errMsg.match(/400: (.+)/);
+        showToast(detailMatch && detailMatch[1] ? detailMatch[1] : "Operation failed", "error");
+      } else {
+        showToast(t("errorDeleteFailed") || errMsg, "error");
+      }
     }
   };
 
   const handleDeleteAvatar = async (userId: number) => {
-    if (!token || isDemoMode) return;
+    if (isDemoMode) {
+      // Демо-режим: удаляем локально
+      setUsers((prev) => prev.map((user) => user.id === userId ? { ...user, avatar: null } : user));
+      showToast("Avatar deleted (demo mode)", "success");
+      return;
+    }
+    
+    if (!token) {
+      showToast("You are not authenticated. Please log in.", "error");
+      return;
+    }
+    
     try {
       await apiRequest(`/users/${userId}/avatar`, { method: "DELETE", token }, apiMode);
       setUsers((prev) => prev.map((user) => user.id === userId ? { ...user, avatar: null } : user));
       showToast(t("success"), "success");
-    } catch {
-      showToast(t("errorDeleteFailed"), "error");
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Unknown error";
+      console.error("Avatar delete failed:", err);
+      
+      if (errMsg.includes("Failed to fetch")) {
+        showToast("API Server is not running. Please start the backend server.", "error");
+      } else if (errMsg.includes("400:")) {
+        const detailMatch = errMsg.match(/400: (.+)/);
+        showToast(detailMatch && detailMatch[1] ? detailMatch[1] : "Operation failed", "error");
+      } else {
+        showToast(t("errorDeleteFailed") || errMsg, "error");
+      }
     }
   };
 
   const handleDeletePortfolio = async (userId: number, url: string) => {
-    if (!token || isDemoMode) return;
+    if (isDemoMode) {
+      // Демо-режим: удаляем локально
+      setUsers((prev) => prev.map((user) => user.id === userId ? { ...user, portfolio: (user.portfolio || []).filter((item) => item !== url) } : user));
+      showToast("Portfolio item deleted (demo mode)", "success");
+      return;
+    }
+    
+    if (!token) {
+      showToast("You are not authenticated. Please log in.", "error");
+      return;
+    }
+
     try {
       await apiRequest(`/users/${userId}/portfolio?url=${encodeURIComponent(url)}`, { method: "DELETE", token }, apiMode);
       setUsers((prev) => prev.map((user) => user.id === userId ? { ...user, portfolio: (user.portfolio || []).filter((item) => item !== url) } : user));
       showToast(t("success"), "success");
-    } catch {
-      showToast(t("errorDeleteFailed"), "error");
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Unknown error";
+      console.error("Portfolio delete failed:", err);
+      
+      if (errMsg.includes("Failed to fetch")) {
+        showToast("API Server is not running. Please start the backend server.", "error");
+      } else if (errMsg.includes("400:")) {
+        const detailMatch = errMsg.match(/400: (.+)/);
+        showToast(detailMatch && detailMatch[1] ? detailMatch[1] : "Operation failed", "error");
+      } else {
+        showToast(t("errorDeleteFailed") || errMsg, "error");
+      }
     }
   };
 
   const handleToggleBlock = async (userId: number, currentlyBlocked: boolean) => {
-    if (!token && !isDemoMode) return;
-    
     const confirmed = window.confirm(currentlyBlocked ? "Розблокувати користувача?" : "Заблокувати користувача?");
     if (!confirmed) return;
     
+    // Оптимистичное обновление UI
     setUsers(prev => prev.map(user => 
       user.id === userId 
         ? { ...user, isBlocked: !currentlyBlocked, status: currentlyBlocked ? 'Active' : 'Blocked' }
         : user
     ));
     showToast(currentlyBlocked ? "Користувача розблоковано" : "Користувача заблоковано", "success");
+    
+    // В демо-режиме не отправляем на сервер
+    if (isDemoMode) return;
+    
+    // В реальном режиме отправляем запрос на сервер
+    if (!token) {
+      // Откатываем изменения при отсутствии токена
+      setUsers(prev => prev.map(user => 
+        user.id === userId 
+          ? { ...user, isBlocked: currentlyBlocked, status: currentlyBlocked ? 'Blocked' : 'Active' }
+          : user
+      ));
+      showToast("You are not authenticated. Please log in.", "error");
+      return;
+    }
+    
+    try {
+      // Используем правильный эндпоинт: /block для блокировки, /unblock для разблокировки
+      const endpoint = currentlyBlocked ? "unblock" : "block";
+      await apiRequest(`/users/${userId}/${endpoint}`, { method: "POST", token }, apiMode);
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Unknown error";
+      console.error("Block toggle failed:", err);
+      
+      // Откатываем изменения при ошибке
+      setUsers(prev => prev.map(user => 
+        user.id === userId 
+          ? { ...user, isBlocked: currentlyBlocked, status: currentlyBlocked ? 'Blocked' : 'Active' }
+          : user
+      ));
+      
+      // Проверяем различные типы ошибок
+      if (errMsg.includes("Failed to fetch")) {
+        showToast("API Server is not running. Please start the backend server.", "error");
+      } else if (errMsg.includes("401") || errMsg.includes("Unauthorized")) {
+        showToast("Your session expired. Please re-login.", "error");
+      } else if (errMsg.includes("Cannot block admin")) {
+        showToast("Cannot block admin users. Admin users are protected from blocking.", "error");
+      } else if (errMsg.includes("400:")) {
+        // Извлекаем детальное сообщение об ошибке 400
+        const detailMatch = errMsg.match(/400: (.+)/);
+        if (detailMatch && detailMatch[1]) {
+          showToast(detailMatch[1], "error");
+        } else {
+          showToast("Operation failed. " + errMsg, "error");
+        }
+      } else {
+        showToast("Failed to update user status: " + errMsg, "error");
+      }
+    }
   };
 
   return (
@@ -240,10 +357,13 @@ export default function AdminUsersPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {!authHydrated ? <p className="text-stalker-muted">Loading...</p> : 
-           loading ? <p className="text-stalker-muted">Loading...</p> : 
-           error ? <p className="text-stalker-red">{error}</p> : 
-           pagedUsers.length === 0 ? <p className="text-stalker-muted">No users found</p> : (
+          {loading || !authHydrated ? (
+            <p className="text-stalker-muted">Loading...</p>
+          ) : error ? (
+            <p className="text-stalker-red">{error}</p>
+          ) : pagedUsers.length === 0 ? (
+            <p className="text-stalker-muted">No users found</p>
+          ) : (
             <div className="overflow-x-auto rounded-lg border border-stalker-border -mx-4 px-4 md:mx-0 md:px-0">
               <table className="w-full min-w-[600px] md:min-w-0">
                 <thead className="bg-stalker-border">
@@ -258,8 +378,8 @@ export default function AdminUsersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pagedUsers.map((user, index) => (
-                    <tr key={user.id} className={`border-b border-stalker-border ${index % 2 === 0 ? 'bg-stalker-dark' : 'bg-stalker-darker'} hover:bg-stalker-card transition-colors`}>
+                  {pagedUsers.map((user) => (
+                    <tr key={user.id} className={`border-b border-stalker-border ${user.id % 2 === 0 ? 'bg-stalker-dark' : 'bg-stalker-darker'} hover:bg-stalker-card transition-colors`}>
                       <td className="py-2 md:py-3 px-2 md:px-4 text-stalker-text text-sm">{user.id}</td>
                       <td className="py-2 md:py-3 px-2 md:px-4 font-medium text-stalker-green text-sm">{user.name}</td>
                       <td className="py-2 md:py-3 px-2 md:px-4 text-stalker-text text-sm hidden sm:table-cell truncate max-w-[120px] md:max-w-none">{user.email}</td>
@@ -318,13 +438,15 @@ export default function AdminUsersPage() {
               </table>
             </div>
           )}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-4 text-sm text-stalker-muted">
-            <span className="text-xs sm:text-sm">Page {page} of {totalPages}</span>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="text-xs sm:text-sm">Prev</Button>
-              <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="text-xs sm:text-sm">Next</Button>
+          {!loading && !error && pagedUsers.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-4 text-sm text-stalker-muted">
+              <span className="text-xs sm:text-sm">Page {page} of {totalPages}</span>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="text-xs sm:text-sm">Prev</Button>
+                <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="text-xs sm:text-sm">Next</Button>
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </>

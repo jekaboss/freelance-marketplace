@@ -14,9 +14,30 @@ import { useAdmin } from "@/components/admin-provider";
 import { useAuth } from "@/components/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getApiBase, getProvidersForMode } from "@/lib/api-client";
+import { getUserScopedItem } from "@/lib/user-storage";
+
+type HeaderThread = {
+  unreadBy?: Record<string, number>;
+  participants?: Array<{ id: number }>;
+};
+
+function getUnreadFromThreads(userId?: number | null): number {
+  if (typeof window === "undefined" || !userId) return 0;
+  try {
+    const raw = localStorage.getItem("chatThreads:v1");
+    if (!raw) return 0;
+    const threads = JSON.parse(raw) as HeaderThread[];
+    if (!Array.isArray(threads)) return 0;
+    return threads
+      .filter((thread) => Array.isArray(thread.participants) && thread.participants.some((p) => p.id === userId))
+      .reduce((sum, thread) => sum + (thread.unreadBy?.[String(userId)] || 0), 0);
+  } catch {
+    return 0;
+  }
+}
 
 // SSR-safe admin link
-function AdminLink({ isAdmin }: { isAdmin: boolean }) {
+function AdminLink({ isAdmin, isStalker }: { isAdmin: boolean; isStalker?: boolean }) {
   const [isClient, setIsClient] = useState(false);
   const { t } = useTranslation();
 
@@ -29,7 +50,12 @@ function AdminLink({ isAdmin }: { isAdmin: boolean }) {
   }
 
   return (
-    <Link href="/admin" className="transition-colors hover:text-foreground/80 text-foreground">
+    <Link
+      href="/admin"
+      className={isStalker
+        ? "transition-colors text-stalker-green hover:text-stalker-yellow"
+        : "transition-colors hover:text-foreground/80 text-foreground"}
+    >
       {t('adminPanel')}
     </Link>
   );
@@ -58,6 +84,7 @@ export function Header() {
   const { isAdmin } = useAdmin();
   const { apiMode, setApiMode, user, isAuthenticated, logout, isHydrated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   const apiModes = [
     { value: "auto", label: "Auto" },
@@ -86,15 +113,127 @@ export function Header() {
   const isAdminUser = user?.role === "admin";
   const isFreelancer = user?.role === "freelancer";
   const isAdminPanel = isAdminUser && pathname.startsWith("/admin");
-  const unreadMessages = isHydrated && isAuthenticated && typeof window !== "undefined"
-    ? Number(localStorage.getItem("unreadMessagesCount") || 0)
-    : 0;
+  const isStalkerHeader = isAdminPanel;
+  const messagesRoute = isAdminUser ? "/admin/support" : "/messages";
+
+  useEffect(() => {
+    if (!isHydrated || !isAuthenticated || !user?.id || typeof window === "undefined") {
+      setUnreadMessages(0);
+      return;
+    }
+
+    const updateUnread = () => {
+      const scopedCounter = Number(getUserScopedItem("unreadMessagesCount", user.id) || 0);
+      const threadCounter = getUnreadFromThreads(user.id);
+      setUnreadMessages(Math.max(scopedCounter, threadCounter));
+    };
+
+    updateUnread();
+
+    const onStorage = (event: StorageEvent) => {
+      if (!event.key || event.key === "chatThreads:v1" || event.key.includes("unreadMessagesCount")) {
+        updateUnread();
+      }
+    };
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("focus", updateUnread);
+    const intervalId = window.setInterval(updateUnread, 2000);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", updateUnread);
+      window.clearInterval(intervalId);
+    };
+  }, [isHydrated, isAuthenticated, user?.id]);
 
   // Close mobile menu when clicking on a link
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
+  if (isStalkerHeader) {
+    return (
+      <header className="sticky top-0 z-50 w-full border-b border-stalker-border bg-stalker-dark/95 text-stalker-text backdrop-blur">
+        <div className="container mx-auto grid h-16 grid-cols-[auto_1fr_auto] items-center px-4">
+          <Logo className="pointer-events-none select-none cursor-default" />
+
+          <nav className="hidden md:flex items-center justify-center text-sm font-medium">
+            <AdminLink isAdmin={isAdmin} isStalker />
+          </nav>
+
+          <div className="flex items-center space-x-2 lg:space-x-4 justify-self-end">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-stalker-text hover:bg-stalker-card hover:text-stalker-yellow"
+              aria-label="Toggle theme"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              suppressHydrationWarning
+            >
+              <SunIcon className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <MoonIcon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            </Button>
+
+            {isHydrated && isAuthenticated && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`relative text-stalker-text hover:bg-stalker-card hover:text-stalker-yellow ${unreadMessages > 0 ? "text-green-500 animate-pulse" : ""}`}
+              aria-label="Messages"
+              onClick={() => router.push(messagesRoute)}
+            >
+                <MessageSquareIcon className="h-5 w-5" />
+                {unreadMessages > 0 && (
+                  <span className="absolute right-1.5 top-1.5 inline-flex h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
+                )}
+              </Button>
+            )}
+
+            {isHydrated && isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-stalker-card">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={avatarUrl || undefined} alt={displayName} className="object-cover" />
+                      <AvatarFallback className="bg-stalker-card text-stalker-green">
+                        {displayName.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-stalker-dark border-stalker-border text-stalker-text" align="end">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{displayName}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin/settings">
+                      <SettingsIcon className="mr-2 h-4 w-4" />
+                      {t('settings') || 'Settings'}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout}>
+                    <LogOutIcon className="mr-2 h-4 w-4" />
+                    {t('logout') || 'Logout'}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <AuthModal defaultTab="signup" buttonLabel={t('login')} />
+            )}
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+    <header className={`sticky top-0 z-50 w-full border-b backdrop-blur ${
+      "bg-background/95"
+    }`}>
       <div className="container mx-auto grid h-16 grid-cols-[auto_1fr_auto] items-center px-4">
         <Logo className={isAdminPanel ? "pointer-events-none select-none cursor-default" : undefined} />
 
@@ -158,7 +297,7 @@ export function Header() {
             </>
           ) : isAdminUser ? (
             <>
-              <AdminLink isAdmin={isAdmin} />
+              <AdminLink isAdmin={isAdmin} isStalker={isStalkerHeader} />
             </>
           ) : isFreelancer ? (
             <>
@@ -204,7 +343,7 @@ export function Header() {
                   </div>
                 </div>
               </div>
-              <AdminLink isAdmin={isAdmin} />
+              <AdminLink isAdmin={isAdmin} isStalker={isStalkerHeader} />
             </>
           )}
         </nav>
@@ -214,6 +353,7 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
+            className={isStalkerHeader ? "text-stalker-text hover:bg-stalker-card hover:text-stalker-yellow" : undefined}
             aria-label="Toggle theme"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             suppressHydrationWarning
@@ -226,9 +366,11 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className={`relative transition-colors ${unreadMessages > 0 ? "text-green-500 animate-pulse" : ""}`}
+              className={`relative transition-colors ${
+                isStalkerHeader ? "text-stalker-text hover:bg-stalker-card hover:text-stalker-yellow" : ""
+              } ${unreadMessages > 0 ? "text-green-500 animate-pulse" : ""}`}
               aria-label="Messages"
-              onClick={() => router.push("/messages")}
+              onClick={() => router.push(messagesRoute)}
             >
               <MessageSquareIcon className="h-5 w-5" />
               {unreadMessages > 0 && (
@@ -241,16 +383,25 @@ export function Header() {
           {isHydrated && isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Button
+                  variant="ghost"
+                  className={`relative h-10 w-10 rounded-full ${
+                    isStalkerHeader ? "hover:bg-stalker-card" : ""
+                  }`}
+                >
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={avatarUrl || undefined} alt={displayName} className="object-cover" />
-                    <AvatarFallback className="bg-primary/10">
+                    <AvatarFallback className={isStalkerHeader ? "bg-stalker-card text-stalker-green" : "bg-primary/10"}>
                       {displayName.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent
+                className={`w-56 ${isStalkerHeader ? "bg-stalker-dark border-stalker-border text-stalker-text" : ""}`}
+                align="end"
+                forceMount
+              >
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{displayName}</p>
@@ -348,7 +499,7 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className={`md:hidden ${isStalkerHeader ? "text-stalker-text hover:bg-stalker-card hover:text-stalker-yellow" : ""}`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
             suppressHydrationWarning
@@ -360,7 +511,7 @@ export function Header() {
 
       {/* Mobile Navigation Menu - shows below md breakpoint */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t bg-background">
+        <div className={`md:hidden border-t ${isStalkerHeader ? "border-stalker-border bg-stalker-dark text-stalker-text" : "bg-background"}`}>
           <nav className="container mx-auto px-4 py-4 flex flex-col space-y-2">
             {/* Mobile For Clients Section */}
             <div className="border-b pb-2 mb-2">

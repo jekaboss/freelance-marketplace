@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/toast-provider";
 import { BriefcaseIcon } from "lucide-react";
+import { setUserScopedItem } from "@/lib/user-storage";
 
 const CURRENCIES = [
   "USD","EUR","UAH","GBP","PLN","CZK","CHF","CAD","AUD","NZD",
@@ -103,7 +104,7 @@ export default function PostVacancyPage() {
       additionalInstructions,
     };
 
-    localStorage.setItem("newVacancyDraft", JSON.stringify(draftVacancy));
+    setUserScopedItem("newVacancyDraft", JSON.stringify(draftVacancy), user?.id || null);
 
     showToast("Вакансію опубліковано", "success");
     setLoading(false);

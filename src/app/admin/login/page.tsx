@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
     if (ok) {
       setTimeout(() => {
         try {
-          const rawUser = localStorage.getItem("authUser");
+          const rawUser = sessionStorage.getItem("authUser") || localStorage.getItem("authUser");
           if (rawUser) {
             const userData = JSON.parse(rawUser);
             if (userData.role === "admin") {

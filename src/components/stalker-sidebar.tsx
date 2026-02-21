@@ -8,7 +8,6 @@ import { RadiationIcon, UserIcon, BriefcaseIcon, SettingsIcon, LogOutIcon, MenuI
 
 export function StalkerSidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const pathname = usePathname();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
@@ -75,8 +74,8 @@ export function StalkerSidebar() {
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg border border-stalker-green/50 bg-stalker-darker flex-shrink-0">
-                      <Icon className={`h-6 w-6 ${isActive ? 'text-stalker-green' : 'text-stalker-green'}`} />
+                    <div className="flex items-center justify-center w-9 h-9 rounded-lg border border-stalker-green/50 bg-stalker-darker flex-shrink-0">
+                      <Icon className={`h-5 w-5 ${isActive ? 'text-stalker-green' : 'text-stalker-green'}`} />
                     </div>
                     <span className={`text-sm whitespace-nowrap ${isActive ? 'text-stalker-green font-semibold' : 'text-stalker-text'}`}>
                       {item.label}
@@ -93,8 +92,8 @@ export function StalkerSidebar() {
               className="cursor-pointer transition-all duration-200 rounded-lg p-3 flex items-center gap-3 border border-stalker-border hover:bg-stalker-card mt-auto"
               onClick={() => setIsOpen(false)}
             >
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg border border-stalker-red/50 bg-stalker-darker flex-shrink-0">
-                <LogOutIcon className="h-6 w-6 text-stalker-red" />
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg border border-stalker-red/50 bg-stalker-darker flex-shrink-0">
+                <LogOutIcon className="h-5 w-5 text-stalker-red" />
               </div>
               <span className="text-sm text-stalker-text whitespace-nowrap">Exit Zone</span>
             </div>
@@ -110,23 +109,14 @@ export function StalkerSidebar() {
         />
       )}
 
-      {/* Desktop Sidebar - Icons only by default, expands on hover */}
+      {/* Desktop Sidebar - always compact with icon tooltips */}
       <div 
-        className={`hidden lg:flex fixed left-0 top-0 z-40 flex-col h-full bg-stalker-dark border-r border-stalker-border transition-all duration-300 ease-in-out ${
-          isHovered ? 'w-56' : 'w-24'
-        }`}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        className="hidden lg:flex fixed left-0 top-0 z-40 flex-col h-full w-24 bg-stalker-dark border-r border-stalker-border"
       >
         <div className="p-4 h-full flex flex-col gap-2">
-          {/* Header - shows icon by default, label on hover */}
+          {/* Header - icon only */}
           <div className="flex items-center gap-3 mb-1">
             <RadiationIcon className="h-8 w-8 text-stalker-green flex-shrink-0" />
-            {isHovered && (
-              <h2 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-stalker-green to-stalker-yellow whitespace-nowrap">
-                ZONE
-              </h2>
-            )}
           </div>
           
           <nav className="space-y-2 flex-1">
@@ -135,7 +125,7 @@ export function StalkerSidebar() {
               const isActive = pathname === item.href;
               
               return (
-                <Link key={item.href} href={item.href}>
+                <Link key={item.href} href={item.href} className="block relative group">
                   <div 
                     className={`cursor-pointer transition-all duration-200 rounded-lg p-3 flex items-center gap-3 ${
                       isActive 
@@ -143,36 +133,34 @@ export function StalkerSidebar() {
                         : 'hover:bg-stalker-card border border-stalker-border'
                     }`}
                   >
-                    <div className={`flex items-center justify-center w-10 h-10 rounded-lg border flex-shrink-0 transition-all ${
+                    <div className={`flex items-center justify-center w-9 h-9 rounded-lg border flex-shrink-0 transition-all ${
                       isActive
                         ? 'border-stalker-green bg-stalker-darker'
                         : 'border-stalker-green/30 bg-stalker-darker'
                     }`}>
-                      <Icon className={`h-6 w-6 ${isActive ? 'text-stalker-green' : 'text-stalker-green'}`} />
+                      <Icon className={`h-5 w-5 ${isActive ? 'text-stalker-green' : 'text-stalker-green'}`} />
                     </div>
-                    {isHovered && (
-                      <span className={`text-sm whitespace-nowrap transition-opacity ${isActive ? 'text-stalker-green font-semibold' : 'text-stalker-text'}`}>
-                        {item.label}
-                      </span>
-                    )}
                   </div>
+                  <span className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 rounded-md border border-stalker-border bg-stalker-card px-2 py-1 text-xs text-stalker-text opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 whitespace-nowrap">
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
           </nav>
           
           {/* Exit button */}
-          <Link href="/admin/login" onClick={(e) => { e.preventDefault(); localStorage.removeItem('isAdmin'); window.location.href = '/admin/login'; }}>
+          <Link href="/admin/login" className="relative group" onClick={(e) => { e.preventDefault(); localStorage.removeItem('isAdmin'); window.location.href = '/admin/login'; }}>
             <div 
               className="cursor-pointer transition-all duration-200 rounded-lg p-3 flex items-center gap-3 hover:bg-stalker-card border border-stalker-border mt-auto"
             >
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg border border-stalker-red/30 bg-stalker-darker flex-shrink-0">
-                <LogOutIcon className="h-6 w-6 text-stalker-red" />
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg border border-stalker-red/30 bg-stalker-darker flex-shrink-0">
+                <LogOutIcon className="h-5 w-5 text-stalker-red" />
               </div>
-              {isHovered && (
-                <span className="text-sm text-stalker-text whitespace-nowrap">Exit Zone</span>
-              )}
             </div>
+            <span className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 rounded-md border border-stalker-border bg-stalker-card px-2 py-1 text-xs text-stalker-text opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 whitespace-nowrap">
+              Exit Zone
+            </span>
           </Link>
         </div>
       </div>

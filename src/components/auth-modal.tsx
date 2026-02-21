@@ -59,7 +59,7 @@ export function AuthModal({ defaultTab = "login", buttonLabel }: { defaultTab?: 
     setIsOpen(false);
     setTimeout(() => {
       try {
-        const rawUser = localStorage.getItem("authUser");
+        const rawUser = sessionStorage.getItem("authUser") || localStorage.getItem("authUser");
         const role = rawUser ? JSON.parse(rawUser)?.role : undefined;
         if (role === "admin") {
           router.push("/admin");

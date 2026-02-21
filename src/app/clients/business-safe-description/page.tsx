@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/toast-provider";
 import { ShieldIcon, LockIcon, CheckCircleIcon, ArrowLeftIcon, FileTextIcon, UsersIcon } from "lucide-react";
+import { getUserScopedItem, removeUserScopedItem } from "@/lib/user-storage";
 
 export default function BusinessSafeDescriptionPage() {
   const { token, apiMode, isAuthenticated, user, isHydrated } = useAuth();
@@ -44,9 +45,9 @@ export default function BusinessSafeDescriptionPage() {
   }
 
   useEffect(() => {
-    const name = localStorage.getItem('businessSafeProject') || '';
-    const amt = localStorage.getItem('businessSafeAmount') || '';
-    const milestonesData = localStorage.getItem('businessSafeMilestones') || '';
+    const name = getUserScopedItem('businessSafeProject', user?.id || null) || '';
+    const amt = getUserScopedItem('businessSafeAmount', user?.id || null) || '';
+    const milestonesData = getUserScopedItem('businessSafeMilestones', user?.id || null) || '';
     setProjectName(name);
     setAmount(amt);
     setMilestones(milestonesData);
@@ -54,7 +55,7 @@ export default function BusinessSafeDescriptionPage() {
     if (!name) {
       router.push('/clients/business-safe');
     }
-  }, [router]);
+  }, [router, user?.id]);
 
   const handleSubmit = async () => {
     setError(null);
@@ -91,9 +92,9 @@ export default function BusinessSafeDescriptionPage() {
 
       if (response.ok) {
         showToast("Угоду успішно створено!", "success");
-        localStorage.removeItem('businessSafeProject');
-        localStorage.removeItem('businessSafeAmount');
-        localStorage.removeItem('businessSafeMilestones');
+        removeUserScopedItem('businessSafeProject', user?.id || null);
+        removeUserScopedItem('businessSafeAmount', user?.id || null);
+        removeUserScopedItem('businessSafeMilestones', user?.id || null);
         router.push('/projects');
       } else {
         const data = await response.json();
@@ -101,9 +102,9 @@ export default function BusinessSafeDescriptionPage() {
       }
     } catch (err) {
       showToast("Угоду успішно створено! (Demo)", "success");
-      localStorage.removeItem('businessSafeProject');
-      localStorage.removeItem('businessSafeAmount');
-      localStorage.removeItem('businessSafeMilestones');
+      removeUserScopedItem('businessSafeProject', user?.id || null);
+      removeUserScopedItem('businessSafeAmount', user?.id || null);
+      removeUserScopedItem('businessSafeMilestones', user?.id || null);
       router.push('/projects');
     } finally {
       setLoading(false);
