@@ -20,7 +20,7 @@ import Link from "next/link";
 // Компонент для показання часу сервера в реальному часі
 function ServerTime() {
   const [uptime, setUptime] = useState<{ days: number; hours: number; minutes: number } | null>(null);
-  const [serverStartTime, setServerStartTime] = useState<Date | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Отримати час запуску сервера
@@ -30,37 +30,30 @@ function ServerTime() {
         if (response.ok) {
           const data = await response.json();
           const startTime = new Date(data.server_start_time);
-          setServerStartTime(startTime);
+          
+          const updateUptime = () => {
+            const now = new Date();
+            const elapsed = now.getTime() - startTime.getTime();
+            const days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((elapsed % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
+            
+            setUptime({ days, hours, minutes });
+          };
+
+          updateUptime();
+          const interval = setInterval(updateUptime, 1000);
+          setLoading(false);
+          return () => clearInterval(interval);
         }
       } catch (error) {
         console.warn("Failed to fetch server start time:", error);
-        // Fallback: використати поточний час (для локального тестування)
-        setServerStartTime(new Date());
+        setLoading(false);
       }
     };
 
     fetchServerStartTime();
   }, []);
-
-  useEffect(() => {
-    if (!serverStartTime) return;
-
-    const updateUptime = () => {
-      const now = new Date();
-      const elapsed = now.getTime() - serverStartTime.getTime();
-      const days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((elapsed % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
-      
-      setUptime({ days, hours, minutes });
-    };
-
-    updateUptime();
-    const interval = setInterval(updateUptime, 1000);
-    return () => clearInterval(interval);
-  }, [serverStartTime]);
-
-  if (!uptime) return null;
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border border-green-200 dark:border-green-800 shadow-sm">
@@ -73,7 +66,7 @@ function ServerTime() {
       <div className="text-sm">
         <p className="text-green-700 dark:text-green-400 font-semibold text-xs uppercase tracking-wide">На сервісі</p>
         <p className="text-green-600 dark:text-green-300 font-bold">
-          {uptime.days} д {uptime.hours} год {uptime.minutes} хв
+          {loading ? "..." : uptime ? `${uptime.days} д ${uptime.hours} год ${uptime.minutes} хв` : "Error"}
         </p>
       </div>
     </div>
