@@ -10,12 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from 'react-i18next';
-import { CameraIcon, CalendarIcon, MapPinIcon, DollarSignIcon, StarIcon, ExternalLinkIcon, ClockIcon } from "lucide-react";
+import { CameraIcon, CalendarIcon, MapPinIcon, DollarSignIcon, StarIcon, ExternalLinkIcon, ClockIcon, SettingsIcon } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useToast } from "@/components/toast-provider";
 import { apiRequest, getApiBase, getProvidersForMode } from "@/lib/api-client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // Компонент для показання рейтингу зі звёздами
 function RatingStars({ rating = 4.8, maxRating = 5 }) {
@@ -188,6 +189,7 @@ export default function ProfilePage() {
   const { t } = useTranslation();
   const { token, apiMode, isAuthenticated, updateUserAvatar, isHydrated } = useAuth();
   const { showToast } = useToast();
+  const router = useRouter();
   const loadedProfileKeyRef = useRef<string | null>(null);
 
   const [user, setUser] = useState<ApiUser | null>(null);
@@ -497,6 +499,17 @@ export default function ProfilePage() {
               </div>
             </div>
           </Card>
+
+          <div className="flex gap-3 mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => router.push("/profile/settings")}
+              className="flex items-center gap-2"
+            >
+              <SettingsIcon className="h-4 w-4" />
+              Настройки
+            </Button>
+          </div>
 
           {loadingUser && (
             <div className="text-center py-8">
