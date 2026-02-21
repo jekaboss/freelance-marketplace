@@ -434,9 +434,9 @@ export default function AdminSupportPage() {
                                 <span>
                                   Replies: {ticket.replies}
                                 </span>
-                                {"unread" in ticket && ticket.unread > 0 && (
+                                {"unread" in ticket && ticket.unread! > 0 && (
                                   <span className="text-stalker-green">
-                                    New: {ticket.unread}
+                                    New: {ticket.unread!}
                                   </span>
                                 )}
                               </div>
