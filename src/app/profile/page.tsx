@@ -19,31 +19,39 @@ import Link from "next/link";
 
 // Компонент для показання часу сервера в реальному часі
 function ServerTime() {
-  const [time, setTime] = useState<string>("--:--");
-  const [day, setDay] = useState<string>("");
+  const [uptime, setUptime] = useState<{ days: number; hours: number; minutes: number } | null>(null);
+  const startTimeRef = useRef<number>(Date.now());
 
   useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      const dayName = new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(now);
+    const updateUptime = () => {
+      const elapsed = Date.now() - startTimeRef.current;
+      const days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((elapsed % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
       
-      setTime(`${hours}:${minutes}`);
-      setDay(dayName);
+      setUptime({ days, hours, minutes });
     };
 
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
+    updateUptime();
+    const interval = setInterval(updateUptime, 1000);
     return () => clearInterval(interval);
   }, []);
 
+  if (!uptime) return null;
+
   return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
-      <ClockIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border border-green-200 dark:border-green-800 shadow-sm">
+      <div className="relative">
+        <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+          <ClockIcon className="h-4 w-4 text-white" />
+        </div>
+        <div className="absolute top-0 right-0 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+      </div>
       <div className="text-sm">
-        <p className="text-blue-600 dark:text-blue-400 font-semibold">{day}</p>
-        <p className="text-blue-600 dark:text-blue-400 text-xs">Server: {time}</p>
+        <p className="text-green-700 dark:text-green-400 font-semibold text-xs uppercase tracking-wide">На сервісі</p>
+        <p className="text-green-600 dark:text-green-300 font-bold">
+          {uptime.days} д {uptime.hours} год {uptime.minutes} хв
+        </p>
       </div>
     </div>
   );
