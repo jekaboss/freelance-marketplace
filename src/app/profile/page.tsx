@@ -17,6 +17,36 @@ import { apiRequest, getApiBase, getProvidersForMode } from "@/lib/api-client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
+// Компонент для показання рейтингу зі звёздами
+function RatingStars({ rating = 4.8, maxRating = 5 }) {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 !== 0;
+  const emptyStars = maxRating - fullStars - (hasHalfStar ? 1 : 0);
+
+  return (
+    <div className="flex items-center gap-1">
+      {/* Заповнені звёзди */}
+      {Array(fullStars).fill(0).map((_, i) => (
+        <StarIcon key={`full-${i}`} className="h-5 w-5 text-yellow-500 fill-current" />
+      ))}
+      {/* Половинча звізда */}
+      {hasHalfStar && (
+        <div key="half" className="relative w-5 h-5">
+          <StarIcon className="h-5 w-5 text-gray-300 fill-current" />
+          <div className="absolute left-0 top-0 overflow-hidden w-2.5">
+            <StarIcon className="h-5 w-5 text-yellow-500 fill-current" />
+          </div>
+        </div>
+      )}
+      {/* Пусті звёзди */}
+      {Array(emptyStars).fill(0).map((_, i) => (
+        <StarIcon key={`empty-${i}`} className="h-5 w-5 text-gray-300 fill-current" />
+      ))}
+      <span className="text-sm font-semibold text-primary ml-2">{rating.toFixed(1)}</span>
+    </div>
+  );
+}
+
 // Компонент для показання часу сервера в реальному часі
 function ServerTime() {
   const [uptime, setUptime] = useState<string>("0 д 0 год 0 хв");
@@ -463,7 +493,7 @@ export default function ProfilePage() {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-2 gap-4 pt-8 border-t">
                 <div className="text-center"><div className="text-2xl font-bold text-primary">{projects.length}</div><p className="text-sm text-muted-foreground">Projects Posted</p></div>
-                <div className="text-center"><div className="flex items-center justify-center"><StarIcon className="h-5 w-5 text-yellow-500 fill-current" /><span className="text-2xl font-bold text-primary ml-1">4.8</span></div><p className="text-sm text-muted-foreground">Rating</p></div>
+                <div className="text-center"><div className="flex items-center justify-center"><RatingStars rating={4.8} /></div><p className="text-sm text-muted-foreground">Rating</p></div>
               </div>
             </div>
           </Card>
