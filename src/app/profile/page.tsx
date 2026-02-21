@@ -10,12 +10,44 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from 'react-i18next';
-import { CameraIcon, CalendarIcon, MapPinIcon, DollarSignIcon, StarIcon, ExternalLinkIcon } from "lucide-react";
+import { CameraIcon, CalendarIcon, MapPinIcon, DollarSignIcon, StarIcon, ExternalLinkIcon, ClockIcon } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useToast } from "@/components/toast-provider";
 import { apiRequest, getApiBase, getProvidersForMode } from "@/lib/api-client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+
+// Компонент для показання часу сервера в реальному часі
+function ServerTime() {
+  const [time, setTime] = useState<string>("--:--");
+  const [day, setDay] = useState<string>("");
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const dayName = new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(now);
+      
+      setTime(`${hours}:${minutes}`);
+      setDay(dayName);
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
+      <ClockIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+      <div className="text-sm">
+        <p className="text-blue-600 dark:text-blue-400 font-semibold">{day}</p>
+        <p className="text-blue-600 dark:text-blue-400 text-xs">Server: {time}</p>
+      </div>
+    </div>
+  );
+}
 
 type ApiUser = {
   id: number;
@@ -366,6 +398,7 @@ export default function ProfilePage() {
                   </div>
                   <p className="text-muted-foreground mt-4">{freelancerBio || "Complete your profile to get better matches."}</p>
                 </div>
+                <ServerTime />
               </div>
               <div className="grid grid-cols-2 md:grid-cols-2 gap-4 pt-8 border-t">
                 <div className="text-center"><div className="text-2xl font-bold text-primary">{projects.length}</div><p className="text-sm text-muted-foreground">Projects Posted</p></div>
