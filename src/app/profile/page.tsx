@@ -19,76 +19,70 @@ import Link from "next/link";
 
 // Компонент для показання часу сервера в реальному часі
 function ServerTime() {
-  const [uptime, setUptime] = useState<{ days: number; hours: number; minutes: number } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [uptime, setUptime] = useState<string>("0 д 0 год 0 хв");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Перевірити кеш в sessionStorage
+    setMounted(true);
+
+    if (typeof window === 'undefined') return;
+
+    // Перевірити кеш
     const cached = sessionStorage.getItem("serverStartTime");
+    let startTime: Date;
+
     if (cached) {
-      const startTime = new Date(cached);
-      
-      const updateUptime = () => {
+      startTime = new Date(cached);
+      updateUptime(startTime);
+    } else {
+      // Спробувати отримати з API
+      fetch("/api/health", { 
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.server_start_time) {
+            sessionStorage.setItem("serverStartTime", data.server_start_time);
+            startTime = new Date(data.server_start_time);
+            updateUptime(startTime);
+          }
+        })
+        .catch(err => {
+          console.warn("Health check failed:", err);
+        });
+    }
+
+    function updateUptime(startTime: Date) {
+      const calculateUptime = () => {
         const now = new Date();
         const elapsed = now.getTime() - startTime.getTime();
         const days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
         const hours = Math.floor((elapsed % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
-        
-        setUptime({ days, hours, minutes });
+
+        setUptime(`${days} д ${hours} год ${minutes} хв`);
       };
 
-      updateUptime();
-      setLoading(false);
-      const interval = setInterval(updateUptime, 1000);
+      calculateUptime();
+      const interval = setInterval(calculateUptime, 1000);
       return () => clearInterval(interval);
     }
-
-    // Отримати час запуску сервера з timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 секунди timeout
-
-    const fetchServerStartTime = async () => {
-      try {
-        const response = await fetch("/api/health", { signal: controller.signal });
-        if (response.ok) {
-          const data = await response.json();
-          const startTimeStr = data.server_start_time;
-          
-          // Зберегти в кеш
-          sessionStorage.setItem("serverStartTime", startTimeStr);
-          
-          const startTime = new Date(startTimeStr);
-          
-          const updateUptime = () => {
-            const now = new Date();
-            const elapsed = now.getTime() - startTime.getTime();
-            const days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((elapsed % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
-            
-            setUptime({ days, hours, minutes });
-          };
-
-          updateUptime();
-          const interval = setInterval(updateUptime, 1000);
-          setLoading(false);
-          return () => clearInterval(interval);
-        }
-      } catch (error) {
-        console.warn("Failed to fetch server start time:", error);
-        setLoading(false);
-        // Показати хоча б щось
-        setUptime({ days: 0, hours: 0, minutes: 0 });
-      } finally {
-        clearTimeout(timeoutId);
-      }
-    };
-
-    fetchServerStartTime();
-
-    return () => clearTimeout(timeoutId);
   }, []);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border border-green-200 dark:border-green-800 shadow-sm">
+        <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+          <ClockIcon className="h-4 w-4 text-white" />
+        </div>
+        <div className="text-sm">
+          <p className="text-green-700 dark:text-green-400 font-semibold text-xs uppercase tracking-wide">На сервісі</p>
+          <p className="text-green-600 dark:text-green-300 font-bold">0 д 0 год 0 хв</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border border-green-200 dark:border-green-800 shadow-sm">
@@ -100,9 +94,7 @@ function ServerTime() {
       </div>
       <div className="text-sm">
         <p className="text-green-700 dark:text-green-400 font-semibold text-xs uppercase tracking-wide">На сервісі</p>
-        <p className="text-green-600 dark:text-green-300 font-bold">
-          {loading ? "..." : uptime ? `${uptime.days} д ${uptime.hours} год ${uptime.minutes} хв` : "Error"}
-        </p>
+        <p className="text-green-600 dark:text-green-300 font-bold">{uptime}</p>
       </div>
     </div>
   );
