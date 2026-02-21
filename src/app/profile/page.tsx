@@ -20,11 +20,34 @@ import Link from "next/link";
 // Компонент для показання часу сервера в реальному часі
 function ServerTime() {
   const [uptime, setUptime] = useState<{ days: number; hours: number; minutes: number } | null>(null);
-  const startTimeRef = useRef<number>(Date.now());
+  const [serverStartTime, setServerStartTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    // Отримати час запуску сервера
+    const fetchServerStartTime = async () => {
+      try {
+        const response = await fetch("/api/health");
+        if (response.ok) {
+          const data = await response.json();
+          const startTime = new Date(data.server_start_time);
+          setServerStartTime(startTime);
+        }
+      } catch (error) {
+        console.warn("Failed to fetch server start time:", error);
+        // Fallback: використати поточний час (для локального тестування)
+        setServerStartTime(new Date());
+      }
+    };
+
+    fetchServerStartTime();
+  }, []);
+
+  useEffect(() => {
+    if (!serverStartTime) return;
+
     const updateUptime = () => {
-      const elapsed = Date.now() - startTimeRef.current;
+      const now = new Date();
+      const elapsed = now.getTime() - serverStartTime.getTime();
       const days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
       const hours = Math.floor((elapsed % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
@@ -35,7 +58,7 @@ function ServerTime() {
     updateUptime();
     const interval = setInterval(updateUptime, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [serverStartTime]);
 
   if (!uptime) return null;
 
