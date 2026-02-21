@@ -35,12 +35,18 @@ function ServerTime() {
       startTime = new Date(cached);
       updateUptime(startTime);
     } else {
-      // Спробувати отримати з API
-      fetch("/api/health", { 
+      // Спробувати отримати з API - намагаємся на локальному хості
+      const backendUrl = process.env.NEXT_PUBLIC_API_FASTAPI_BASE || "http://localhost:4002/api";
+      const healthUrl = `${backendUrl}/health`;
+      
+      fetch(healthUrl, { 
         method: "GET",
         headers: { "Content-Type": "application/json" }
       })
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
         .then(data => {
           if (data.server_start_time) {
             sessionStorage.setItem("serverStartTime", data.server_start_time);
@@ -49,7 +55,11 @@ function ServerTime() {
           }
         })
         .catch(err => {
-          console.warn("Health check failed:", err);
+          console.log("Health check:", err.message, "- using local uptime");
+          // Если АПИ не доступна - используем локальное время (сервер онлайн)
+          const now = new Date();
+          sessionStorage.setItem("serverStartTime", now.toISOString());
+          updateUptime(now);
         });
     }
 
