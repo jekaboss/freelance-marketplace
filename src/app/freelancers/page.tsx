@@ -134,13 +134,14 @@ export default function FreelancersPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      <div className="container py-6 md:py-8 px-4 flex-grow">
-        <div className="mb-6 md:mb-10">
-          <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">{t('freelancers')}</h1>
-          <p className="text-muted-foreground text-sm md:text-base">Discover talented professionals for your project</p>
-        </div>
+      <div className="container py-6 md:py-8 px-4 sm:px-6 lg:px-8 flex-grow">
+        <div className="max-w-7xl mx-auto w-full">
+          <div className="mb-6 md:mb-10">
+            <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">{t('freelancers')}</h1>
+            <p className="text-muted-foreground text-sm md:text-base">Discover talented professionals for your project</p>
+          </div>
 
-        <div className="space-y-6">
+          <div className="space-y-6">
           <div className="flex flex-col md:flex-row gap-4 md:gap-6">
             {/* Filters Sidebar */}
             <div className={`${showFilters ? 'block' : 'hidden'} md:block w-full md:w-64 flex-shrink-0`}>

@@ -75,32 +75,59 @@ export async function apiRequestToProvider<T>(
 ): Promise<T> {
   const base = getApiBase(provider);
   const url = `${base}${path}`;
-  const response = await fetch(url, buildRequestInit(options));
+  
+  try {
+    const response = await fetch(url, buildRequestInit(options));
 
-  if (!response.ok) {
-    const text = await response.text();
-    let errorDetail = text || response.statusText;
-    
-    // Попробуем парсить JSON ошибку из FastAPI или NestJS
-    try {
-      const json = JSON.parse(text);
-      if (json.detail) {
-        errorDetail = json.detail;
-      } else if (json.message) {
-        errorDetail = json.message;
+    if (!response.ok) {
+      const text = await response.text();
+      let errorDetail = text || response.statusText;
+      
+      // Попробуем парсити JSON ошибку из FastAPI или NestJS
+      try {
+        const json = JSON.parse(text);
+        if (json.detail) {
+          errorDetail =
+            typeof json.detail === "string"
+              ? json.detail
+              : JSON.stringify(json.detail);
+        } else if (json.message) {
+          errorDetail =
+            typeof json.message === "string"
+              ? json.message
+              : JSON.stringify(json.message);
+        }
+      } catch {
+        // Если это не JSON, используем текст как есть  
+        if (text.length > 200) {
+          errorDetail = `${response.status} Error`;
+        }
       }
-    } catch {
-      // Если это не JSON, используем текст как есть
+      
+      throw new Error(`${provider.toUpperCase()} ${response.status}: ${errorDetail}`);
     }
-    
-    throw new Error(`${provider.toUpperCase()} ${response.status}: ${errorDetail}`);
-  }
 
-  if (response.status === 204) {
-    return undefined as T;
-  }
+    if (response.status === 204) {
+      return undefined as T;
+    }
 
-  return response.json() as Promise<T>;
+    // Проверяем что response содержит JSON
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      // Если это не JSON (например изображение 404), возвращаем пустой объект
+      console.warn(`Non-JSON response from ${url}:`, contentType);
+      return {} as T;
+    }
+
+    return response.json() as Promise<T>;
+  } catch (error) {
+    // Re-throw errors, but ensure they're proper Error objects
+    if (error instanceof SyntaxError && error.message.includes("JSON")) {
+      console.error(`JSON parse error from ${url}`, error);
+      throw new Error(`${provider.toUpperCase()}: Invalid JSON response`);
+    }
+    throw error;
+  }
 }
 
 export async function apiRequest<T>(

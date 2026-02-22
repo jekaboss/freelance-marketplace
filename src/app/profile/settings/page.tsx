@@ -8,14 +8,19 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { useTranslation } from 'react-i18next';
 import { BellIcon, GlobeIcon, PaletteIcon } from "lucide-react";
 import { useToast } from "@/components/toast-provider";
+import { useAuth } from "@/components/auth-provider";
+import { apiRequest } from "@/lib/api-client";
 import { useState, useEffect } from "react";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const { token, apiMode } = useAuth();
+  const [user, setUser] = useState<any>(null);
 
   // Email Notifications
   const [emailSettings, setEmailSettings] = useState({
@@ -25,10 +30,6 @@ export default function SettingsPage() {
     quarterlyDigest: true,
     weeklyBlog: true,
   });
-
-  // Telegram
-  const [telegramEnabled, setTelegramEnabled] = useState(false);
-  const [telegramConnected, setTelegramConnected] = useState(false);
 
   // Push & Sound
   const [pushSettings, setPushSettings] = useState({
@@ -52,7 +53,6 @@ export default function SettingsPage() {
       try {
         const settings = JSON.parse(saved);
         if (settings.email) setEmailSettings(settings.email);
-        if (settings.telegram !== undefined) setTelegramEnabled(settings.telegram);
         if (settings.push) setPushSettings(settings.push);
         if (settings.language) setLanguage(settings.language);
         if (settings.autoTranslate !== undefined) setAutoTranslate(settings.autoTranslate);
@@ -62,12 +62,20 @@ export default function SettingsPage() {
         console.error("Failed to load settings:", e);
       }
     }
-  }, []);
+
+    // Load user data
+    if (token) {
+      apiRequest("/auth/me", { token }, apiMode)
+        .then(res => {
+          setUser(res.data);
+        })
+        .catch(err => console.error("Failed to load user:", err));
+    }
+  }, [token, apiMode]);
 
   const saveSettings = () => {
     const settings = {
       email: emailSettings,
-      telegram: telegramEnabled,
       push: pushSettings,
       language,
       autoTranslate,
@@ -95,15 +103,15 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 flex flex-col">
       <Header />
-      <div className="container py-8 px-4 flex-grow">
-        <div className="max-w-3xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold">Настройки</h1>
-            <p className="text-muted-foreground mt-2">Керуйте ваші преференціями та повідомленнями</p>
+      <div className="container py-8 px-4 sm:px-6 lg:px-8 flex-grow">
+        <div className="max-w-3xl mx-auto w-full">
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold">Настройки</h1>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">Керуйте ваші преференціями та повідомленнями</p>
           </div>
 
-          <Tabs defaultValue="notifications" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
+          <Tabs defaultValue="notifications" className="space-y-4 md:space-y-6">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
               <TabsTrigger value="notifications">
                 <BellIcon className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Повідомлення</span>
@@ -144,7 +152,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label>Спеціальні пропозиції від Freelancehunt</Label>
+                    <Label>Спеціальні пропозиції від сервісу</Label>
                     <Switch
                       checked={emailSettings.specialOffers}
                       onCheckedChange={(val) => handleEmailChange('specialOffers', val)}
@@ -164,32 +172,6 @@ export default function SettingsPage() {
                       onCheckedChange={(val) => handleEmailChange('weeklyBlog', val)}
                     />
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Telegram */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>💬 Telegram повідомлення</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Включити Telegram</Label>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {telegramConnected ? "✅ Телеграм підключено" : "❌ Телеграм не підключено"}
-                      </p>
-                    </div>
-                    <Switch
-                      checked={telegramEnabled}
-                      onCheckedChange={setTelegramEnabled}
-                    />
-                  </div>
-                  {telegramEnabled && !telegramConnected && (
-                    <Button variant="outline" className="w-full">
-                      Підключити Telegram
-                    </Button>
-                  )}
                 </CardContent>
               </Card>
 

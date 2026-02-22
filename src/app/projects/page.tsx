@@ -142,102 +142,103 @@ export default function ProjectsPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      <div className="container py-6 md:py-8 px-4 flex-grow">
-        <div className="mb-6 md:mb-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">{t('projects')}</h1>
-            <p className="text-muted-foreground text-sm md:text-base">Find the perfect project to showcase your skills</p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="md:hidden"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <SearchIcon className="h-4 w-4 mr-2" />
-              Filters
-            </Button>
-            {isHydrated && isAuthenticated && user?.role !== "freelancer" && (
-              <Button asChild>
-                <Link href="/projects/new">Create Project</Link>
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-            {/* Filters Sidebar */}
-            <div className={`${showFilters ? 'block' : 'hidden'} md:block w-full md:w-64 flex-shrink-0`}>
-              <Card>
-                <CardHeader className="pb-3 md:pb-4">
-                  <CardTitle className="text-lg">Filters</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Search</label>
-                    <div className="relative">
-                      <Input
-                        placeholder="Search projects..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={handleSearch}
-                      />
-                      <SearchIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Budget Range</label>
-                    <select className="w-full p-2 border rounded-md text-sm">
-                      <option>All Budgets</option>
-                      <option>Under $500</option>
-                      <option>$500 - $1,000</option>
-                      <option>$1,00 - $2,500</option>
-                      <option>$2,500 - $5,000</option>
-                      <option>Above $5,000</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Project Type</label>
-                    <select className="w-full p-2 border rounded-md text-sm">
-                      <option>All Types</option>
-                      <option>Fixed Price</option>
-                      <option>Hourly</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Experience Level</label>
-                    <select className="w-full p-2 border rounded-md text-sm">
-                      <option>All Levels</option>
-                      <option>Entry Level</option>
-                      <option>Intermediate</option>
-                      <option>Expert</option>
-                    </select>
-                  </div>
-                </CardContent>
-              </Card>
+      <div className="container py-6 md:py-8 px-4 sm:px-6 lg:px-8 flex-grow">
+        <div className="max-w-7xl mx-auto w-full">
+          <div className="mb-6 md:mb-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">{t('projects')}</h1>
+              <p className="text-muted-foreground text-sm md:text-base">Find the perfect project to showcase your skills</p>
             </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="md:hidden"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <SearchIcon className="h-4 w-4 mr-2" />
+                Filters
+              </Button>
+              {isHydrated && isAuthenticated && user?.role !== "freelancer" && (
+                <Button asChild>
+                  <Link href="/projects/new">Create Project</Link>
+                </Button>
+              )}
+            </div>
+          </div>
 
-            {/* Projects List */}
-            <div className="flex-1">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
-                <h2 className="text-lg md:text-xl font-semibold">Available Projects</h2>
-                <p className="text-sm text-muted-foreground">{filteredProjects.length} projects found</p>
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+              {/* Filters Sidebar */}
+              <div className={`${showFilters ? 'block' : 'hidden'} md:block w-full md:w-64 flex-shrink-0`}>
+                <Card>
+                  <CardHeader className="pb-3 md:pb-4">
+                    <CardTitle className="text-lg">Filters</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Search</label>
+                      <div className="relative">
+                        <Input
+                          placeholder="Search projects..."
+                          className="pl-8"
+                          value={searchQuery}
+                          onChange={handleSearch}
+                        />
+                        <SearchIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Budget Range</label>
+                      <select className="w-full p-2 border rounded-md text-sm">
+                        <option>All Budgets</option>
+                        <option>Under $500</option>
+                        <option>$500 - $1,000</option>
+                        <option>$1,00 - $2,500</option>
+                        <option>$2,500 - $5,000</option>
+                        <option>Above $5,000</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Project Type</label>
+                      <select className="w-full p-2 border rounded-md text-sm">
+                        <option>All Types</option>
+                        <option>Fixed Price</option>
+                        <option>Hourly</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Experience Level</label>
+                      <select className="w-full p-2 border rounded-md text-sm">
+                        <option>All Levels</option>
+                        <option>Entry Level</option>
+                        <option>Intermediate</option>
+                        <option>Expert</option>
+                      </select>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
-              {showNoResults ? (
-                <div className="text-center py-8 md:py-12">
-                  <h3 className="text-lg md:text-xl font-semibold mb-2">No results found</h3>
-                  <p className="text-muted-foreground mb-4">
-                    We couldn&apos;t find any projects matching &quot;{searchQuery}&quot;
-                  </p>
-                  <Button onClick={() => setSearchQuery('')}>Clear Search</Button>
+              {/* Projects List */}
+              <div className="flex-1">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                  <h2 className="text-lg md:text-xl font-semibold">Available Projects</h2>
+                  <p className="text-sm text-muted-foreground">{filteredProjects.length} projects found</p>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 md:gap-6">
+
+                {showNoResults ? (
+                  <div className="text-center py-8 md:py-12">
+                    <h3 className="text-lg md:text-xl font-semibold mb-2">No results found</h3>
+                    <p className="text-muted-foreground mb-4">
+                      We couldn&apos;t find any projects matching &quot;{searchQuery}&quot;
+                    </p>
+                    <Button onClick={() => setSearchQuery('')}>Clear Search</Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 md:gap-6">
                   {filteredProjects.map((project) => (
                     <Card key={project.id} className="hover:shadow-md transition-shadow">
                       <CardHeader className="pb-3">
@@ -280,18 +281,19 @@ export default function ProjectsPage() {
                 </div>
               )}
 
-              <div className="flex justify-center mt-6 md:mt-8">
-                <nav className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                    Previous
-                  </Button>
-                  <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">
-                    {page}
-                  </Button>
-                  <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
-                    Next
-                  </Button>
-                </nav>
+                <div className="flex justify-center mt-6 md:mt-8">
+                  <nav className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                      Previous
+                    </Button>
+                    <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">
+                      {page}
+                    </Button>
+                    <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                      Next
+                    </Button>
+                  </nav>
+                </div>
               </div>
             </div>
           </div>

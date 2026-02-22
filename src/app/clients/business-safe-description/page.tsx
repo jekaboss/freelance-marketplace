@@ -97,8 +97,12 @@ export default function BusinessSafeDescriptionPage() {
         removeUserScopedItem('businessSafeMilestones', user?.id || null);
         router.push('/projects');
       } else {
-        const data = await response.json();
-        setError(data.message || "Помилка створення угоди");
+        try {
+          const data = await response.json();
+          setError(data.message || "Помилка створення угоди");
+        } catch {
+          setError("Помилка створення угоди");
+        }
       }
     } catch (err) {
       showToast("Угоду успішно створено! (Demo)", "success");

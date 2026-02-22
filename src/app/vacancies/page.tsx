@@ -206,8 +206,8 @@ export default function VacanciesPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      <div className="flex-1 py-6 md:py-8 px-4">
-        <div className="max-w-7xl mx-auto">
+      <div className="flex-1 py-6 md:py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto w-full">
           {/* Header Section */}
           <div className="mb-6 md:mb-10 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">

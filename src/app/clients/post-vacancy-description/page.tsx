@@ -92,8 +92,12 @@ export default function PostVacancyDescriptionPage() {
         removeUserScopedItem('newVacancyEmployment', user?.id || null);
         router.push('/projects');
       } else {
-        const data = await response.json();
-        setError(data.message || "Помилка створення вакансії");
+        try {
+          const data = await response.json();
+          setError(data.message || "Помилка при створенні вакансії");
+        } catch {
+          setError("Помилка при створенні вакансії");
+        }
       }
     } catch (err) {
       showToast("Вакансію успішно створено! (Demo)", "success");

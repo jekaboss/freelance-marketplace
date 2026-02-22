@@ -436,13 +436,13 @@ export function Header() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/profile">
+                      <Link href="/profile/personal-data">
                         <ClipboardListIcon className="mr-2 h-4 w-4" />
                         {"\u041e\u0441\u043e\u0431\u0438\u0441\u0442\u0456 \u0434\u0430\u043d\u0456"}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/profile">
+                      <Link href="/profile/settings">
                         <SettingsIcon className="mr-2 h-4 w-4" />
                         {"\u041d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f"}
                       </Link>
@@ -469,13 +469,13 @@ export function Header() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/profile">
+                      <Link href="/profile/personal-data">
                         <ClipboardListIcon className="mr-2 h-4 w-4" />
                         {"\u041e\u0441\u043e\u0431\u0438\u0441\u0442\u0456 \u0434\u0430\u043d\u0456"}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/admin/settings">
+                      <Link href="/profile/settings">
                         <SettingsIcon className="mr-2 h-4 w-4" />
                         {"\u041d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f"}
                       </Link>

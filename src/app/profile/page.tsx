@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from 'react-i18next';
-import { CameraIcon, CalendarIcon, MapPinIcon, DollarSignIcon, StarIcon, ExternalLinkIcon, ClockIcon, SettingsIcon } from "lucide-react";
+import { CameraIcon, CalendarIcon, MapPinIcon, DollarSignIcon, StarIcon, ExternalLinkIcon, ClockIcon } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useToast } from "@/components/toast-provider";
 import { apiRequest, getApiBase, getProvidersForMode } from "@/lib/api-client";
@@ -470,8 +470,8 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 flex flex-col">
       <Header />
-      <div className="container py-8 px-4 flex-grow">
-        <div className="max-w-4xl mx-auto">
+      <div className="container py-8 px-4 sm:px-6 lg:px-8 flex-grow">
+        <div className="max-w-4xl mx-auto w-full">
           <Card className="bg-card/50 backdrop-blur-sm shadow-xl overflow-hidden">
             <div className="p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 mb-6">
@@ -499,17 +499,6 @@ export default function ProfilePage() {
               </div>
             </div>
           </Card>
-
-          <div className="flex gap-3 mt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => router.push("/profile/settings")}
-              className="flex items-center gap-2"
-            >
-              <SettingsIcon className="h-4 w-4" />
-              Настройки
-            </Button>
-          </div>
 
           {loadingUser && (
             <div className="text-center py-8">

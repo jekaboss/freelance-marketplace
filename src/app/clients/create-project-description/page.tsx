@@ -91,8 +91,12 @@ export default function CreateProjectDescriptionPage() {
         removeUserScopedItem('newProjectBudget', user?.id || null);
         router.push('/projects');
       } else {
-        const data = await response.json();
-        setError(data.message || "Помилка створення проекту");
+        try {
+          const data = await response.json();
+          setError(data.message || "Помилка створення проекту");
+        } catch {
+          setError("Помилка створення проекту");
+        }
       }
     } catch (err) {
       // Для демо-режиму

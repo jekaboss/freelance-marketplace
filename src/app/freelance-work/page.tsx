@@ -320,8 +320,8 @@ export default function FreelanceWorkPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      <div className="flex-1 py-6 md:py-8 px-4">
-        <div className="max-w-7xl mx-auto">
+      <div className="flex-1 py-6 md:py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto w-full">
           <div className="mb-6 md:mb-10 text-center">
             <h1 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2" suppressHydrationWarning>{t('freelanceWorkOnline')}</h1>
             <p className="text-muted-foreground text-sm md:text-base" suppressHydrationWarning>{t('remoteServices')}</p>
